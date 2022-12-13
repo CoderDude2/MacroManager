@@ -36,7 +36,7 @@ class HotkeyWidget(tk.Frame):
                 pressedKey = event.char.upper()
                 if(pressedKey != '' and pressedKey not in self.combination):
                     self.combination.append( event.char.upper() )
-            self.hotKey.set(' + '.join(self.combination))
+            self.hotKey.set(' '.join(self.combination))
         
         if(len(self.combination) > 1):
             self.toggleButton.configure(state=tk.NORMAL)

@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 from tool import Tool
 from hotkeywidget import HotkeyWidget
+from sys import platform
+from pynput import mouse
+from macroManager import MacroManager
 
 class ToolList(ttk.Treeview):
 	def __init__(self, master=None):
@@ -32,7 +35,7 @@ class MenuBar(tk.Menu):
 	def __init__(self, master=None):
 		super().__init__(master)
 
-		self.file_menu = tk.Menu(self)
+		self.file_menu = tk.Menu(self, tearoff=False)
 
 		self.add_cascade(label='File', menu=self.file_menu)
 
@@ -48,6 +51,8 @@ class App(tk.Tk):
 
 			# ------------------------------------[ Variables ]------------------------------------
 			self.toolPopupIsActive = False
+			self.isTracking = False
+			self.macroManager = MacroManager()
 			
 			# ------------------------------------[ App Structure ]------------------------------------
 			menuBar = MenuBar(self)
@@ -62,9 +67,18 @@ class App(tk.Tk):
 			# ------------------------------------[ Event Handling ]------------------------------------
 			self.bind("<Button-1>", self.LeftClick)
 			self.bind_all("<Button-1>", lambda event: event.widget.focus_set())
-			self.bind("<Button-2>", self.RightClick)
+
+			if(platform == "win32"):
+				self.bind("<Button-3>", self.RightClick)
+			elif(platform == "darwin"):
+				self.bind("<Button-2>", self.RightClick)
+			
 			self.bind("<Delete>", self.toolList.delete_tool)
 			self.bind("<BackSpace>", self.toolList.delete_tool)
+
+			mouseListener = mouse.Listener(on_move=self.update_coordinates)
+			mouseListener.start()
+			self.macroManager.startListening()
 			
 	def ToolPopup(self, createTool=True, tool=None):
 		if(self.toolPopupIsActive == False):
@@ -80,9 +94,6 @@ class App(tk.Tk):
 			self.toolName.set(tool.toolName)
 			self.xPosition.set(tool.position[0])
 			self.yPosition.set(tool.position[1])
-		
-		# Boolean for tracking mouse position
-		self.isTracking = False
 
 		if(createTool):
 			self.popupWindow.title("New Tool")
@@ -155,7 +166,6 @@ class App(tk.Tk):
 		buttonContainer.grid(row=3, column=0,columnspan=6,sticky='ew')
 
 		# ------------------------------------[ Event Handling ]------------------------------------
-		self.popupWindow.bind("<Motion>", self.update_coordinates)
 		self.popupWindow.bind("<space>", self.toggleOff)
 
 	def cancelButton(self):
@@ -166,15 +176,16 @@ class App(tk.Tk):
 		tool = Tool(self.toolName.get(), self.hotkeyWidget.hotKey.get(), (self.xPosition.get(), self.yPosition.get()))
 		if(createTool):
 			self.toolList.add_tool(tool)
+			self.macroManager.addTool(tool)
 		else:
 			self.toolList.edit_tool(tool)
 		self.popupWindow.destroy()
 		self.toolPopupIsActive = False
 
-	def update_coordinates(self, event):
+	def update_coordinates(self, x,y):
 		if(self.isTracking):
-			self.xPosition.set(event.x_root)
-			self.yPosition.set(event.y_root)
+			self.xPosition.set(x)
+			self.yPosition.set(y)
 
 	def toggleOn(self):
 		self.isTracking = True

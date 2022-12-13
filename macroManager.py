@@ -3,22 +3,32 @@ from tool import Tool
 import time
 
 class MacroManager:
-    def __init__(self, tools):
+    def __init__(self, tools=[]):
         self.tools = tools
+        self.hotKeysDict = {}
 
     def startListening(self):
+        self.updateListener()
+        listener = keyboard.GlobalHotKeys(hotkeys=self.hotKeysDict)
+        listener.start()
+        # listener.join()
 
-        hotKeysDict = {}
-
+    def addTool(self, tool):
+        print("Tool List:")
+        tool.hotKey = '+'.join([f'<{key.lower()}>' if len(key) > 1 else key.lower() for key in tool.hotKey.split(' ')])
+        self.tools.append(tool)
+        for t in self.tools:
+            print(t.toolName, t.hotKey, t.position)
+        self.hotKeysDict[tool.hotKey] = lambda:self.activate(self.position)
+        print("Tool Dictionary")
+        for hK in self.hotKeysDict:
+            print(hK)
+    
+    def updateListener(self):
         hotKeys = [tool.hotKey for tool in self.tools]
         position = [tool.position for tool in self.tools]
         for i in zip(hotKeys, position):
-            print(i[0])
-            hotKeysDict[i[0]] = lambda:self.activate(i[1])
-        print(hotKeysDict)
-        listener = keyboard.GlobalHotKeys(hotkeys=hotKeysDict)
-        listener.start()
-        # listener.join()
+            self.hotKeysDict[i[0]] = lambda:self.activate(i[1])
 
     def activate(self, position):
         mouseController = mouse.Controller()

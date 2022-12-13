@@ -1,5 +1,5 @@
 import gui
-import macroManager
+import macroManager 
 from tool import Tool
 
 tools = [
@@ -9,8 +9,4 @@ tools = [
 ]
 
 app = gui.App()
-
-macroManager = macroManager.MacroManager(app.getTools())
-macroManager.startListening()
-
 app.mainloop()
