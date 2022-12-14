@@ -1,33 +1,16 @@
-from pynput import mouse
-import time
-
-delay = 0.05
-m = mouse.Controller()
-
-def setCursorPosition(position):
-    m.position = position
-
-def leftClick():
-    m.click(mouse.Button.left)
-
 class HotKey:
-    def __init__(self, name, hotKey, position):
-        self.name = name
-        self.hotKey = hotKey
-        self.position = position
-
-    def execute(self):
-        print(self.hotKey)
-        previousPosition = m.position
-
-        setCursorPosition(self.position)
-        time.sleep(delay)
-        leftClick()
-        time.sleep(delay)
-        setCursorPosition(previousPosition)
+    def __init__(self, hotkey=[]):
+        self.hotkey = hotkey
     
-    def serialize(self):
-        return [self.name, self.hotKey, self.position]
+    def getFormattedHotkey(self):
+        # Return a format that looks nice on a GUI
+        pass
     
-def deserialize(serializedObject):
-    return HotKey(name=serializedObject[0], hotKey=serializedObject[1], position=serializedObject[2])
+    def getHotkey(self):
+        formattedHotkey = ""
+        for key in self.hotkey:
+            if(len(key) > 1):
+                formattedHotkey += f'<{key}>+'
+            else:
+                formattedHotkey += key
+        return formattedHotkey

@@ -184,8 +184,8 @@ class App(tk.Tk):
 
 	def update_coordinates(self, x,y):
 		if(self.isTracking):
-			self.xPosition.set(x)
-			self.yPosition.set(y)
+			self.xPosition.set(round(x))
+			self.yPosition.set(round(y))
 
 	def toggleOn(self):
 		self.isTracking = True
