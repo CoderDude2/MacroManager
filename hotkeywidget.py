@@ -1,13 +1,5 @@
 import tkinter as tk
-
-hotKeyLookUp = {
-    "Shift_L":"Shift",
-    "Shift_R":"Shift",
-    "Control_L":"Ctrl",
-    "Control_R":"Ctrl",
-    "Alt_L":"Alt",
-    "Alt_R":"Alt",
-}
+import hotkey
 
 class HotkeyWidget(tk.Frame):
     def __init__(self, master=None, hotKey=None):
@@ -26,23 +18,12 @@ class HotkeyWidget(tk.Frame):
         self.hotKeyLabel.pack(side=tk.LEFT)
         self.toggleButton.pack(side=tk.LEFT)
 
-    def record(self, event):
-        if(self.isActive):
-            if(event.keysym in hotKeyLookUp.keys()):
-                pressedKey = hotKeyLookUp[event.keysym]
-                if(pressedKey not in self.combination):
-                    self.combination.append(pressedKey)
-            else:
-                pressedKey = event.char.upper()
-                if(pressedKey != '' and pressedKey not in self.combination):
-                    self.combination.append( event.char.upper() )
-            self.hotKey.set(' '.join(self.combination))
-        
-        if(len(self.combination) > 1):
-            self.toggleButton.configure(state=tk.NORMAL)
-        if(len(self.combination) == 3):
-            self.deActivate()
+    def record(self):
+        pass
     
+    def getHotkey(self):
+        pass
+
     def activate(self):
         self.toggleButton.configure(state=tk.DISABLED, text="Save")
         self.combination = []
@@ -59,12 +40,3 @@ class HotkeyWidget(tk.Frame):
             self.activate()
             return
         self.deActivate()
-    
-    def getHotkey(self):
-        hotKey = []
-        for key in self.combination:
-            if(key in hotKeyLookUp.values()):
-                hotKey.append(f"<{key}>")
-            else:
-                hotKey.append(key)
-        return '+'.join(hotKey)

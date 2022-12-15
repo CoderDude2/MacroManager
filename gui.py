@@ -4,7 +4,6 @@ from tool import Tool
 from hotkeywidget import HotkeyWidget
 from sys import platform
 from pynput import mouse
-from macroManager import MacroManager
 
 class ToolList(ttk.Treeview):
 	def __init__(self, master=None):
@@ -52,7 +51,6 @@ class App(tk.Tk):
 			# ------------------------------------[ Variables ]------------------------------------
 			self.toolPopupIsActive = False
 			self.isTracking = False
-			self.macroManager = MacroManager()
 			
 			# ------------------------------------[ App Structure ]------------------------------------
 			menuBar = MenuBar(self)
@@ -78,7 +76,6 @@ class App(tk.Tk):
 
 			mouseListener = mouse.Listener(on_move=self.update_coordinates)
 			mouseListener.start()
-			self.macroManager.startListening()
 			
 	def ToolPopup(self, createTool=True, tool=None):
 		if(self.toolPopupIsActive == False):
@@ -122,11 +119,11 @@ class App(tk.Tk):
 		toolNameEntry = tk.Entry(self.popupWindow, textvariable=self.toolName)
 
 		hotKeyLabel = tk.Label(self.popupWindow, text="Hotkey")
-		if(createTool):
-			self.hotkeyWidget = HotkeyWidget(self.popupWindow)
-		else:
-			self.hotkeyWidget = HotkeyWidget(self.popupWindow, tool.hotKey)
-		self.popupWindow.bind("<KeyPress>", self.hotkeyWidget.record)
+		# if(createTool):
+		# 	self.hotkeyWidget = HotkeyWidget(self.popupWindow)
+		# else:
+		# 	self.hotkeyWidget = HotkeyWidget(self.popupWindow, tool.hotKey)
+		# self.popupWindow.bind("<KeyPress>", self.hotkeyWidget.record)
 
 		positionLabel = tk.Label(self.popupWindow, text="Position")
 
@@ -152,7 +149,7 @@ class App(tk.Tk):
 		toolNameEntry.grid(row=0, column=1, columnspan=5, sticky='ew')
 		# ROW 1
 		hotKeyLabel.grid(row=1, column=0, sticky='w')
-		self.hotkeyWidget.grid(row=1, column=1, columnspan=5, sticky='w')
+		# self.hotkeyWidget.grid(row=1, column=1, columnspan=5, sticky='w')
 		# ROW 2
 		positionLabel.grid(row=2, column=0, sticky='w')
 		xLabel.grid(row=2, column=1)
@@ -173,10 +170,9 @@ class App(tk.Tk):
 		self.toolPopupIsActive = False
 
 	def submitButton(self, createTool=True):
-		tool = Tool(self.toolName.get(), self.hotkeyWidget.hotKey.get(), (self.xPosition.get(), self.yPosition.get()))
+		tool = Tool(self.toolName.get(), "<ctrl>+x", (self.xPosition.get(), self.yPosition.get()))
 		if(createTool):
 			self.toolList.add_tool(tool)
-			self.macroManager.addTool(tool)
 		else:
 			self.toolList.edit_tool(tool)
 		self.popupWindow.destroy()
@@ -221,16 +217,16 @@ class App(tk.Tk):
 			if(selectedItem == ''):
 				self.toolList.deslectAll()
 
-	def getTools(self):
-		tools = []
-		for child in self.toolList.get_children():
-			toolItem = self.toolList.item(child)["values"]
+	# def getTools(self):
+	# 	tools = []
+	# 	for child in self.toolList.get_children():
+	# 		toolItem = self.toolList.item(child)["values"]
 
-			toolName = toolItem[0]
-			toolHotkey = '+'.join( [f'<{key.lower()}>' if len(key) > 1 else key.lower() for key in toolItem[1].split(' ')])
+	# 		toolName = toolItem[0]
+	# 		# toolHotkey = '+'.join( [f'<{key.lower()}>' if len(key) > 1 else key.lower() for key in toolItem[1].split(' ')])
 
-			toolPosition = [int(i) for i in toolItem[2].split(' ')]
+	# 		toolPosition = [int(i) for i in toolItem[2].split(' ')]
 
-			tool = Tool(toolName, toolHotkey, toolPosition)
-			tools.append(tool)
-		return tools
+	# 		tool = Tool(toolName, toolHotkey, toolPosition)
+	# 		tools.append(tool)
+	# 	return tools
