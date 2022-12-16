@@ -1,47 +1,36 @@
-from pynput import keyboard, mouse
+from pynput import keyboard
+import pyautogui
 from tool import Tool
-import time
+import hotkey
 
 class MacroManager:
     def __init__(self, tools=[]):
         self.tools = tools
-        self.hotKeysDict = {}
+        self.current = set()
 
     def startListening(self):
-        self.updateListener()
-        listener = keyboard.GlobalHotKeys(hotkeys=self.hotKeysDict)
+        listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
         listener.start()
-        # listener.join()
+        listener.join()
+
+    def on_press(self, key):
+        self.current.add(key)
+        for tool in self.tools:
+            if(tool.hotKey.compare(self.current)):
+                self.activate(tool.position)
+    
+    def on_release(self, key):
+        if(key in self.current):
+            self.current.remove(key)
 
     def addTool(self, tool):
-        print("Tool List:")
-        tool.hotKey = '+'.join([f'<{key.lower()}>' if len(key) > 1 else key.lower() for key in tool.hotKey.split(' ')])
         self.tools.append(tool)
-        for t in self.tools:
-            print(t.toolName, t.hotKey, t.position)
-        self.hotKeysDict[tool.hotKey] = lambda:self.activate(self.position)
-        print("Tool Dictionary")
-        for hK in self.hotKeysDict:
-            print(hK)
-    
-    def updateListener(self):
-        hotKeys = [tool.hotKey for tool in self.tools]
-        position = [tool.position for tool in self.tools]
-        for i in zip(hotKeys, position):
-            self.hotKeysDict[i[0]] = lambda:self.activate(i[1])
 
     def activate(self, position):
-        mouseController = mouse.Controller()
-        delay = 0.05
-        previousPosition = mouseController.position
-
-        mouseController.position = position
-        time.sleep(delay)
-        mouseController.click(mouse.Button.left)
-        time.sleep(delay)
-        mouseController.position = previousPosition
-
-        
+        originalPosition = pyautogui.position()
+        pyautogui.moveTo(position[0], position[1])
+        pyautogui.click()
+        pyautogui.moveTo(originalPosition.x, originalPosition.y)
 
 # mM = MacroManager(tools)
 # mM.startListening()

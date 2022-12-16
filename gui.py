@@ -216,17 +216,3 @@ class App(tk.Tk):
 			selectedItem = self.toolList.identify("item", event.x, event.y)
 			if(selectedItem == ''):
 				self.toolList.deslectAll()
-
-	# def getTools(self):
-	# 	tools = []
-	# 	for child in self.toolList.get_children():
-	# 		toolItem = self.toolList.item(child)["values"]
-
-	# 		toolName = toolItem[0]
-	# 		# toolHotkey = '+'.join( [f'<{key.lower()}>' if len(key) > 1 else key.lower() for key in toolItem[1].split(' ')])
-
-	# 		toolPosition = [int(i) for i in toolItem[2].split(' ')]
-
-	# 		tool = Tool(toolName, toolHotkey, toolPosition)
-	# 		tools.append(tool)
-	# 	return tools

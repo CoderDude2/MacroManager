@@ -14,12 +14,12 @@ hotKeyLookup = {
 }
 
 class HotKey:
-    def __init__(self, hotkey=[]):
-        self.hotkey = hotkey
+    def __init__(self, combination=set()):
+        self.combination = combination
 
     def serialize(self):
         serializedCombination = []
-        for key in self.hotkey:
+        for key in self.combination:
             if(type(key) == Key):
                 # Convert to a string value and remove the first and last character, then convert to an integer
                 key = int(str(key.value)[1:-1])
@@ -29,16 +29,21 @@ class HotKey:
         return serializedCombination
     
     def format(self):
-        formattedHotkey = ""
-        for key in self.hotkey:
+        formattedHotkey = []
+        for key in self.combination:
             if(str(key) in hotKeyLookup.keys()):
-                formattedHotkey += hotKeyLookup[str(key)] + ' + '
-            elif(str(key).isalpha()):
-                formattedHotkey += str(key)
-        return formattedHotkey
+                formattedHotkey.append(hotKeyLookup[str(key)])
+            elif(type(key) == KeyCode):
+                formattedHotkey.append(str(key.char))
+        return '+'.join(formattedHotkey)
+    
+    def compare(self, keyCombination):
+        if(self.combination == keyCombination):
+            return True
+        return False
     
     def __str__(self):
-        return f'HotKey({self.hotkey})'
+        return f'HotKey({self.combination})'
 
 def deserialize(hotkey):
     deserializedCombination = []
