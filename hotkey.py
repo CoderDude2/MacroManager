@@ -1,16 +1,9 @@
 from pynput.keyboard import Key, KeyCode
 
 hotKeyLookup = {
-    str(Key.alt_gr): "Alt",
-    str(Key.alt_l): "Alt",
-    str(Key.alt_r): "Alt",
     str(Key.alt): "Alt",
     str(Key.ctrl): "Ctrl",
-    str(Key.ctrl_l): "Ctrl",
-    str(Key.ctrl_r): "Ctrl",
     str(Key.shift): "Shift",
-    str(Key.shift_l): "Shift",
-    str(Key.shift_r): "Shift"
 }
 
 class HotKey:
@@ -25,7 +18,7 @@ class HotKey:
                 key = int(str(key.value)[1:-1])
                 serializedCombination.append(key)
             else:
-               serializedCombination.append(key)
+               serializedCombination.append(str(key.char))
         return serializedCombination
     
     def format(self):
@@ -44,13 +37,30 @@ class HotKey:
     
     def __str__(self):
         return f'HotKey({self.combination})'
+    
+    def __eq__(self, other):
+        return self.combination == other.combination
 
 def deserialize(hotkey):
-    deserializedCombination = []
+    deserializedCombination = set()
     for key in hotkey:
         if(type(key) == str):
-            deserializedCombination.append(KeyCode(char=key) )
+            deserializedCombination.add(KeyCode(char=key) )
         else:
-            deserializedCombination.append(Key(KeyCode.from_vk(key)))
+            deserializedCombination.add(Key(KeyCode.from_vk(key)))
     
-    return HotKey(hotkey=deserializedCombination)
+    return HotKey(combination=deserializedCombination)
+
+def parse(combination):
+    parsedCombinaton = set()
+
+    for key in combination.split("+"):
+        if(key == "Shift"):
+            parsedCombinaton.add(Key.shift)
+        elif(key == "Alt"):
+            parsedCombinaton.add(Key.alt)
+        elif(key == "Ctrl"):
+            parsedCombinaton.add(Key.ctrl)
+        else:
+            parsedCombinaton.add(KeyCode(char=key))
+    return HotKey(combination=parsedCombinaton)
