@@ -1,3 +1,5 @@
+import hotkey
+
 class Tool:
     def __init__(self, toolName, hotKey, position):
         self.toolName = toolName
@@ -5,7 +7,13 @@ class Tool:
         self.position = position
     
     def serialize(self):
-        return [self.toolName, self.hotKey, self.position]
+        return [self.toolName, self.hotKey.serialize(), self.position]
+    
+    def __str__(self):
+        return f"{self.toolName} {self.hotKey} {self.position}"
+
+    def __eq__(self, other):
+        return ( (self.toolName == other.toolName) and (self.hotKey == other.hotKey) and (self.position == other.position) )
     
 def deserialize(serializedObject):
-    return Tool(name=serializedObject[0], hotKey=serializedObject[1], position=serializedObject[2])
+    return Tool(toolName=serializedObject[0], hotKey=hotkey.deserialize(serializedObject[1]), position=serializedObject[2])

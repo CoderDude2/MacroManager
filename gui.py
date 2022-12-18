@@ -1,6 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
+from sys import platform
+from pynput import mouse
+import macroManager
 from tool import Tool
+import hotkey
 from hotkeywidget import HotkeyWidget
 
 class ToolList(ttk.Treeview):
@@ -14,11 +18,11 @@ class ToolList(ttk.Treeview):
 		self.heading('position', text='Position')
 	
 	def add_tool(self, tool):
-		self.insert(parent='',index=tk.END, values=(tool.toolName, tool.hotKey, tool.position) )
+		self.insert(parent='',index=tk.END, values=(tool.toolName, tool.hotKey.format(), tool.position) )
 	
 	def edit_tool(self, tool):
 		selected_item = self.selection()[0]
-		self.item(selected_item, values=(tool.toolName, tool.hotKey, tool.position))
+		self.item(selected_item, values=(tool.toolName, tool.hotKey.format(), tool.position))
 
 	def delete_tool(self, event=None):
 		selected_item = self.selection()[0]
@@ -32,7 +36,7 @@ class MenuBar(tk.Menu):
 	def __init__(self, master=None):
 		super().__init__(master)
 
-		self.file_menu = tk.Menu(self)
+		self.file_menu = tk.Menu(self, tearoff=False)
 
 		self.add_cascade(label='File', menu=self.file_menu)
 
@@ -48,6 +52,7 @@ class App(tk.Tk):
 
 			# ------------------------------------[ Variables ]------------------------------------
 			self.toolPopupIsActive = False
+			self.isTracking = False
 			
 			# ------------------------------------[ App Structure ]------------------------------------
 			menuBar = MenuBar(self)
@@ -56,15 +61,23 @@ class App(tk.Tk):
 
 			self.toolList = ToolList(self)
 			self.toolList.grid(row=0, column=0, sticky='news')
-			self.toolList.add_tool(Tool("Extrude Tool", "Alt E", "0 0"))
-			self.toolList.add_tool(Tool("Trim Tool", "Ctrl X", "800 800"))
+			self.toolList.add_tool(Tool("Extrude Tool", hotkey.HotKey( combination={hotkey.Key.ctrl, hotkey.KeyCode(char='e')} ), (0,0)))
+			self.toolList.add_tool(Tool("Trim Tool", hotkey.HotKey(combination={hotkey.Key.ctrl, hotkey.KeyCode(char='x')} ), (800,800 )))
 			
 			# ------------------------------------[ Event Handling ]------------------------------------
 			self.bind("<Button-1>", self.LeftClick)
 			self.bind_all("<Button-1>", lambda event: event.widget.focus_set())
-			self.bind("<Button-2>", self.RightClick)
-			self.bind("<Delete>", self.toolList.delete_tool)
-			self.bind("<BackSpace>", self.toolList.delete_tool)
+
+			if(platform == "win32"):
+				self.bind("<Button-3>", self.RightClick)
+			elif(platform == "darwin"):
+				self.bind("<Button-2>", self.RightClick)
+			
+			self.bind("<Delete>", self.removeTool)
+			self.bind("<BackSpace>", self.removeTool)
+
+			self._macroManager = macroManager.MacroManager()
+			self._macroManager.startListening()
 			
 	def ToolPopup(self, createTool=True, tool=None):
 		if(self.toolPopupIsActive == False):
@@ -76,13 +89,13 @@ class App(tk.Tk):
 		self.xPosition = tk.IntVar()
 		self.yPosition = tk.IntVar()
 
+		self.hotKey = hotkey.HotKey()
+
 		if(not createTool):
 			self.toolName.set(tool.toolName)
+			self.hotKey = tool.hotKey
 			self.xPosition.set(tool.position[0])
 			self.yPosition.set(tool.position[1])
-		
-		# Boolean for tracking mouse position
-		self.isTracking = False
 
 		if(createTool):
 			self.popupWindow.title("New Tool")
@@ -115,7 +128,6 @@ class App(tk.Tk):
 			self.hotkeyWidget = HotkeyWidget(self.popupWindow)
 		else:
 			self.hotkeyWidget = HotkeyWidget(self.popupWindow, tool.hotKey)
-		self.popupWindow.bind("<KeyPress>", self.hotkeyWidget.record)
 
 		positionLabel = tk.Label(self.popupWindow, text="Position")
 
@@ -125,7 +137,7 @@ class App(tk.Tk):
 		yLabel = tk.Label(self.popupWindow,text="Y")
 		yEntry = tk.Entry(self.popupWindow, width=5, textvariable=self.yPosition)
 
-		setPositionButton = tk.Button(self.popupWindow, text="Set", command=self.toggleOn)
+		setPositionButton = tk.Button(self.popupWindow, text="Set", command=self.toggleMouseTrackingOn)
 
 		buttonContainer = tk.Frame(self.popupWindow)
 		cancelButton = tk.Button(buttonContainer, text="Cancel", command=self.cancelButton)
@@ -155,31 +167,34 @@ class App(tk.Tk):
 		buttonContainer.grid(row=3, column=0,columnspan=6,sticky='ew')
 
 		# ------------------------------------[ Event Handling ]------------------------------------
-		self.popupWindow.bind("<Motion>", self.update_coordinates)
-		self.popupWindow.bind("<space>", self.toggleOff)
+		self.popupWindow.bind("<space>", self.toggleMouseTrackingOff)
+		self.popupWindow.bind("<KeyPress>", self.hotkeyWidget.record)
+
+		mouseListener = mouse.Listener(on_move=self.update_coordinates)
+		mouseListener.start()
 
 	def cancelButton(self):
 		self.popupWindow.destroy()
 		self.toolPopupIsActive = False
 
 	def submitButton(self, createTool=True):
-		tool = Tool(self.toolName.get(), self.hotkeyWidget.hotKey.get(), (self.xPosition.get(), self.yPosition.get()))
+		tool = Tool(self.toolName.get(), self.hotkeyWidget.getHotkey(), (self.xPosition.get(), self.yPosition.get()))
 		if(createTool):
-			self.toolList.add_tool(tool)
+			self.addTool(tool)
 		else:
-			self.toolList.edit_tool(tool)
+			self.editTool(tool)
 		self.popupWindow.destroy()
 		self.toolPopupIsActive = False
 
-	def update_coordinates(self, event):
+	def update_coordinates(self, x,y):
 		if(self.isTracking):
-			self.xPosition.set(event.x_root)
-			self.yPosition.set(event.y_root)
+			self.xPosition.set(round(x))
+			self.yPosition.set(round(y))
 
-	def toggleOn(self):
+	def toggleMouseTrackingOn(self):
 		self.isTracking = True
 
-	def toggleOff(self, event):
+	def toggleMouseTrackingOff(self, event):
 		self.isTracking = False
 
 	def RightClick(self, event):
@@ -210,16 +225,25 @@ class App(tk.Tk):
 			if(selectedItem == ''):
 				self.toolList.deslectAll()
 
-	def getTools(self):
-		tools = []
-		for child in self.toolList.get_children():
-			toolItem = self.toolList.item(child)["values"]
+	def addTool(self, tool):
+		self.toolList.add_tool(tool)
+		self._macroManager.addTool(tool)
+	
+	def removeTool(self, event):
+		selectedItem = self.toolList.selection()[0]
+		item = self.toolList.item(selectedItem)['values']
+		_tool = Tool(str(item[0]), hotkey.parse(item[1]), tuple(int(i) for i in item[2].split(' ')))
 
-			toolName = toolItem[0]
-			toolHotkey = '+'.join( [f'<{key.lower()}>' if len(key) > 1 else key.lower() for key in toolItem[1].split(' ')])
+		if(_tool in self._macroManager.tools):
+			self._macroManager.removeTool(self._macroManager.tools.index(_tool))
 
-			toolPosition = [int(i) for i in toolItem[2].split(' ')]
+		self.toolList.delete(selectedItem)
+	
+	def editTool(self, tool):
+		selectedItem = self.toolList.selection()[0]
+		item = self.toolList.item(selectedItem)['values']
+		selectedTool = Tool(str(item[0]), hotkey.parse(item[1]), tuple(int(i) for i in item[2].split(' ')))
 
-			tool = Tool(toolName, toolHotkey, toolPosition)
-			tools.append(tool)
-		return tools
+		if (selectedTool in self._macroManager.tools):
+			self._macroManager.tools[self._macroManager.tools.index(selectedTool)] = tool
+		self.toolList.edit_tool(tool)

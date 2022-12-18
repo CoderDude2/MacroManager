@@ -1,40 +1,42 @@
-from pynput import keyboard, mouse
+from pynput import keyboard
+import pyautogui
 from tool import Tool
-import time
 
 class MacroManager:
-    def __init__(self, tools):
+    def __init__(self, tools=[]):
         self.tools = tools
-
+        self.current = set()
+        
     def startListening(self):
+        self.listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
+        self.listener.start()
+    
+    def on_press(self, key):
+        key = keyboard.Listener.canonical(keyboard.Listener(), key)
+        self.current.add(key)
+        for tool in self.tools:
+            if(tool.hotKey.compare(self.current)):
+                self.activate(tool.position)
+        # print(self.current)
+    
+    def on_release(self, key):
+        key = keyboard.Listener.canonical(keyboard.Listener(), key)
+        if(key in self.current):
+            self.current.remove(key)
+        if(len(self.current) <= 1):
+            self.current.clear()
 
-        hotKeysDict = {}
+    def addTool(self, tool):
+        self.tools.append(tool)
 
-        hotKeys = [tool.hotKey for tool in self.tools]
-        position = [tool.position for tool in self.tools]
-        for i in zip(hotKeys, position):
-            print(i[0])
-            hotKeysDict[i[0]] = lambda:self.activate(i[1])
-        print(hotKeysDict)
-        listener = keyboard.GlobalHotKeys(hotkeys=hotKeysDict)
-        listener.start()
-        # listener.join()
+    def removeTool(self, index):
+        self.tools.pop(index)
 
     def activate(self, position):
-        mouseController = mouse.Controller()
-        delay = 0.05
-        previousPosition = mouseController.position
-
-        mouseController.position = position
-        time.sleep(delay)
-        mouseController.click(mouse.Button.left)
-        time.sleep(delay)
-        mouseController.position = previousPosition
-
-        
-
-# mM = MacroManager(tools)
-# mM.startListening()
+        originalPosition = pyautogui.position()
+        pyautogui.moveTo(position[0], position[1])
+        pyautogui.click()
+        pyautogui.moveTo(originalPosition.x, originalPosition.y)
 
 # def saveToJson(contents):
 #     serializedHotkeys = [i.serialize() for i in contents]
