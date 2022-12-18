@@ -49,6 +49,8 @@ class App(tk.Tk):
 
 			self.grid_rowconfigure(0, weight=1)
 			self.grid_columnconfigure(0, weight=1)
+			
+			self.protocol("WM_DELETE_WINDOW", self.on_close)
 
 			# ------------------------------------[ Variables ]------------------------------------
 			self.toolPopupIsActive = False
@@ -57,16 +59,16 @@ class App(tk.Tk):
 			# ------------------------------------[ App Structure ]------------------------------------
 			menuBar = MenuBar(self)
 			menuBar.file_menu.add_command(label="New Tool", command=self.ToolPopup)
+			menuBar.file_menu.add_command(label="Save", command=self.saveTools)
+			menuBar.file_menu.add_separator()
+			menuBar.file_menu.add_command(label="Exit", command=self.on_close)
 			self.config(menu=menuBar)
 
 			self.toolList = ToolList(self)
 			self.toolList.grid(row=0, column=0, sticky='news')
-			self.toolList.add_tool(Tool("Extrude Tool", hotkey.HotKey( combination={hotkey.Key.ctrl, hotkey.KeyCode(char='e')} ), (0,0)))
-			self.toolList.add_tool(Tool("Trim Tool", hotkey.HotKey(combination={hotkey.Key.ctrl, hotkey.KeyCode(char='x')} ), (800,800 )))
 			
 			# ------------------------------------[ Event Handling ]------------------------------------
 			self.bind("<Button-1>", self.LeftClick)
-			self.bind_all("<Button-1>", lambda event: event.widget.focus_set())
 
 			if(platform == "win32"):
 				self.bind("<Button-3>", self.RightClick)
@@ -78,6 +80,8 @@ class App(tk.Tk):
 
 			self._macroManager = macroManager.MacroManager()
 			self._macroManager.startListening()
+
+			self.loadTools()
 			
 	def ToolPopup(self, createTool=True, tool=None):
 		if(self.toolPopupIsActive == False):
@@ -89,13 +93,13 @@ class App(tk.Tk):
 		self.xPosition = tk.IntVar()
 		self.yPosition = tk.IntVar()
 
-		self.hotKey = hotkey.HotKey()
-
 		if(not createTool):
 			self.toolName.set(tool.toolName)
 			self.hotKey = tool.hotKey
 			self.xPosition.set(tool.position[0])
 			self.yPosition.set(tool.position[1])
+		else:
+			self.hotKey = hotkey.HotKey()
 
 		if(createTool):
 			self.popupWindow.title("New Tool")
@@ -125,9 +129,9 @@ class App(tk.Tk):
 
 		hotKeyLabel = tk.Label(self.popupWindow, text="Hotkey")
 		if(createTool):
-			self.hotkeyWidget = HotkeyWidget(self.popupWindow)
+			self.hotkeyWidget = HotkeyWidget(self.popupWindow, self.hotKey)
 		else:
-			self.hotkeyWidget = HotkeyWidget(self.popupWindow, tool.hotKey)
+			self.hotkeyWidget = HotkeyWidget(self.popupWindow, self.hotKey)
 
 		positionLabel = tk.Label(self.popupWindow, text="Position")
 
@@ -192,6 +196,7 @@ class App(tk.Tk):
 			self.yPosition.set(round(y))
 
 	def toggleMouseTrackingOn(self):
+		self.popupWindow.focus_set()
 		self.isTracking = True
 
 	def toggleMouseTrackingOff(self, event):
@@ -201,13 +206,15 @@ class App(tk.Tk):
 		selectedItem = self.toolList.identify("item", event.x, event.y)
 		if(selectedItem != ''):
 			toolName = self.toolList.item(selectedItem)['values'][0]
-			hotKey = self.toolList.item(selectedItem)['values'][1]
-			position = [int(i) for i in self.toolList.item(selectedItem)['values'][2].split(' ')]
+			hotKey = hotkey.parse(self.toolList.item(selectedItem)['values'][1])
+			position = tuple([int(i) for i in self.toolList.item(selectedItem)['values'][2].split(' ')])
 			tool = Tool(toolName, hotKey, position)
 
 		rightClickMenu = tk.Menu(self, tearoff=False)
 		rightClickMenu.add_command(label="Edit", command=lambda:self.ToolPopup(createTool=False, tool=tool))
-		rightClickMenu.add_command(label="Delete", command=self.toolList.delete_tool)
+		rightClickMenu.add_command(label="Duplicate", command=lambda:self.duplicate(tool))
+		rightClickMenu.add_separator()
+		rightClickMenu.add_command(label="Delete", command=self.removeTool)
 
 		rightClickMenu2 = tk.Menu(self, tearoff=False)
 		rightClickMenu2.add_command(label="New Tool", command=self.ToolPopup)
@@ -229,13 +236,13 @@ class App(tk.Tk):
 		self.toolList.add_tool(tool)
 		self._macroManager.addTool(tool)
 	
-	def removeTool(self, event):
+	def removeTool(self, event=None):
 		selectedItem = self.toolList.selection()[0]
 		item = self.toolList.item(selectedItem)['values']
-		_tool = Tool(str(item[0]), hotkey.parse(item[1]), tuple(int(i) for i in item[2].split(' ')))
+		selectedTool = Tool(str(item[0]), hotkey.parse(item[1]), tuple(int(i) for i in item[2].split(' ')))
 
-		if(_tool in self._macroManager.tools):
-			self._macroManager.removeTool(self._macroManager.tools.index(_tool))
+		if(selectedTool in self._macroManager.tools):
+			self._macroManager.removeTool(self._macroManager.tools.index(selectedTool))
 
 		self.toolList.delete(selectedItem)
 	
@@ -247,3 +254,18 @@ class App(tk.Tk):
 		if (selectedTool in self._macroManager.tools):
 			self._macroManager.tools[self._macroManager.tools.index(selectedTool)] = tool
 		self.toolList.edit_tool(tool)
+
+	def duplicate(self, tool):
+		self.addTool(tool)
+
+	def loadTools(self):
+		tools = macroManager.loadFromJson()
+		for tool in tools:
+			self.addTool(tool)
+
+	def saveTools(self):
+		macroManager.saveToJson(self._macroManager.tools)
+	
+	def on_close(self):
+		self.saveTools()
+		self.destroy()

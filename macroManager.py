@@ -1,6 +1,7 @@
 from pynput import keyboard
 import pyautogui
-from tool import Tool
+from tool import deserialize
+import json
 
 class MacroManager:
     def __init__(self, tools=[]):
@@ -17,7 +18,6 @@ class MacroManager:
         for tool in self.tools:
             if(tool.hotKey.compare(self.current)):
                 self.activate(tool.position)
-        # print(self.current)
     
     def on_release(self, key):
         key = keyboard.Listener.canonical(keyboard.Listener(), key)
@@ -38,23 +38,14 @@ class MacroManager:
         pyautogui.click()
         pyautogui.moveTo(originalPosition.x, originalPosition.y)
 
-# def saveToJson(contents):
-#     serializedHotkeys = [i.serialize() for i in contents]
-#     json_object = json.dumps(serializedHotkeys, indent=4)
-#     with open('hotkeys.json', "w") as file:
-#         file.write(json_object)
+def saveToJson(contents):
+    serializedTools = [tool.serialize() for tool in contents]
+    json_object = json.dumps(serializedTools, indent=4)
+    with open('tools.json', "w") as file:
+        file.write(json_object)
 
-# def loadFromJson():
-#     with open('hotkeys.json', 'r') as file:
-#         object = json.load(file)
-    
-#     deserializedHotkeys = [deserialize(entry) for entry in object]
-
-#     return deserializedHotkeys
-
-# def formatHotKeys(hotKeyList):
-#     formattedHotkeys = {}
-#     for i,h in enumerate(hotKeyList):
-#         formattedHotkeys[f'{h.hotKey}'] = h.execute
-
-#     return formattedHotkeys
+def loadFromJson():
+    with open('tools.json', 'r') as file:
+        object = json.load(file)
+    deserializedTools = [deserialize(entry) for entry in object]
+    return deserializedTools

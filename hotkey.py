@@ -25,9 +25,15 @@ class HotKey:
         formattedHotkey = []
         for key in self.combination:
             if(str(key) in hotKeyLookup.keys()):
-                formattedHotkey.append(hotKeyLookup[str(key)])
+                formattedHotkey.insert(0, hotKeyLookup[str(key)])
             elif(type(key) == KeyCode):
                 formattedHotkey.append(str(key.char))
+        
+        for c in formattedHotkey:
+            if(len(c) == 1):
+                poppedKey = formattedHotkey.pop(formattedHotkey.index(c))
+                formattedHotkey.insert(len(formattedHotkey), poppedKey)
+
         return '+'.join(formattedHotkey)
     
     def compare(self, keyCombination):

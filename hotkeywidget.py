@@ -16,10 +16,7 @@ class HotkeyWidget(tk.Frame):
         super().__init__(master)
         self.isActive = False
 
-        if(hotKey == None):
-            self.hotKey = hotkey.HotKey()
-        else:
-            self.hotKey = hotkey.parse(hotKey)
+        self.hotKey = hotKey
         
         self.hotKeyLabel = tk.Label(self, text=self.hotKey.format(), width=15, background="grey")
         self.toggleButton = tk.Button(self, text="Set Hotkey", command=self.toggleHotkeyRecording)
@@ -46,6 +43,7 @@ class HotkeyWidget(tk.Frame):
         return self.hotKey
 
     def activate(self):
+        self.master.focus_set()
         self.toggleButton.configure(state=tk.DISABLED, text="Save")
         self.hotKeyLabel.config(text="")
         self.hotKey.combination = set()
