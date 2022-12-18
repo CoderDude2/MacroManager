@@ -16,4 +16,4 @@ class Tool:
         return ( (self.toolName == other.toolName) and (self.hotKey == other.hotKey) and (self.position == other.position) )
     
 def deserialize(serializedObject):
-    return Tool(toolName=serializedObject[0], hotKey=hotkey.deserialize(serializedObject[1]), position=serializedObject[2])
+    return Tool(toolName=serializedObject[0], hotKey=hotkey.deserialize(serializedObject[1]), position=tuple(serializedObject[2]))
