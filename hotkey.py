@@ -1,9 +1,9 @@
-from pynput.keyboard import Key, KeyCode
+import pynput
 
 hotKeyLookup = {
-    str(Key.alt): "Alt",
-    str(Key.ctrl): "Ctrl",
-    str(Key.shift): "Shift",
+    str(pynput.keyboard.Key.alt): "Alt",
+    str(pynput.keyboard.Key.ctrl): "Ctrl",
+    str(pynput.keyboard.Key.shift): "Shift",
 }
 
 class HotKey:
@@ -13,7 +13,7 @@ class HotKey:
     def serialize(self):
         serializedCombination = []
         for key in self.combination:
-            if(type(key) == Key):
+            if(type(key) == pynput.keyboard.Key):
                 # Convert to a string value and remove the first and last character, then convert to an integer
                 key = int(str(key.value)[1:-1])
                 serializedCombination.append(key)
@@ -26,7 +26,7 @@ class HotKey:
         for key in self.combination:
             if(str(key) in hotKeyLookup.keys()):
                 formattedHotkey.insert(0, hotKeyLookup[str(key)])
-            elif(type(key) == KeyCode):
+            elif(type(key) == pynput.keyboard.KeyCode):
                 formattedHotkey.append(str(key.char))
         
         for c in formattedHotkey:
@@ -51,9 +51,9 @@ def deserialize(hotkey):
     deserializedCombination = set()
     for key in hotkey:
         if(type(key) == str):
-            deserializedCombination.add(KeyCode(char=key) )
+            deserializedCombination.add(pynput.keyboard.KeyCode(char=key) )
         else:
-            deserializedCombination.add(Key(KeyCode.from_vk(key)))
+            deserializedCombination.add(pynput.keyboard.Key(pynput.keyboard.KeyCode.from_vk(key)))
     
     return HotKey(combination=deserializedCombination)
 
@@ -62,11 +62,11 @@ def parse(combination):
 
     for key in combination.split("+"):
         if(key == "Shift"):
-            parsedCombinaton.add(Key.shift)
+            parsedCombinaton.add(pynput.keyboard.Key.shift)
         elif(key == "Alt"):
-            parsedCombinaton.add(Key.alt)
+            parsedCombinaton.add(pynput.keyboard.Key.alt)
         elif(key == "Ctrl"):
-            parsedCombinaton.add(Key.ctrl)
+            parsedCombinaton.add(pynput.keyboard.Key.ctrl)
         else:
-            parsedCombinaton.add(KeyCode(char=key))
+            parsedCombinaton.add(pynput.keyboard.KeyCode(char=key))
     return HotKey(combination=parsedCombinaton)
