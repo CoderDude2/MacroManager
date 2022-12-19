@@ -14,6 +14,7 @@ class MacroManager:
     
     def on_press(self, key):
         key = keyboard.Listener.canonical(keyboard.Listener(), key)
+        print(key)
         self.current.add(key)
         for tool in self.tools:
             if(tool.hotKey.compare(self.current)):

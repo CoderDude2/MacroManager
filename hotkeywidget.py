@@ -1,6 +1,6 @@
 import tkinter as tk
 from pynput import keyboard
-import hotkey
+# import hotkey
 
 hotKeyLookUp = {
     "Shift_L": keyboard.Key.shift,
@@ -8,7 +8,7 @@ hotKeyLookUp = {
     "Control_L": keyboard.Key.ctrl,
     "Control_R": keyboard.Key.ctrl,
     "Alt_L": keyboard.Key.alt,
-    "Alt_R": keyboard.Key.alt,
+    "Alt_R": keyboard.Key.alt
 }
 
 class HotkeyWidget(tk.Frame):
@@ -26,7 +26,11 @@ class HotkeyWidget(tk.Frame):
 
     def record(self, event):
         if(self.isActive):
-            if(event.keysym in hotKeyLookUp.keys()):
+            print(event.keycode)
+            if(event.keycode > 95 and event.keycode < 106):
+                pressedKey = keyboard.KeyCode(vk=event.keycode)
+                self.hotKey.combination.add(pressedKey)
+            elif(event.keysym in hotKeyLookUp.keys()):
                 pressedKey = hotKeyLookUp[event.keysym]
                 self.hotKey.combination.add(pressedKey)
             else:
@@ -34,6 +38,7 @@ class HotkeyWidget(tk.Frame):
                 if(pressedKey != ''):
                     self.hotKey.combination.add(keyboard.KeyCode(char=pressedKey))
             self.hotKeyLabel.config(text=self.hotKey.format())
+        
         if(len(self.hotKey.combination) > 1):
             self.toggleButton.configure(state=tk.NORMAL)
         if(len(self.hotKey.combination) == 3):
