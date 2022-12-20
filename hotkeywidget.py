@@ -12,10 +12,9 @@ hotKeyLookUp = {
 }
 
 class HotkeyWidget(tk.Frame):
-    def __init__(self, master=None, hotKey=None):
+    def __init__(self, listener, master=None, hotKey=None):
         super().__init__(master)
         self.isActive = False
-
         self.hotKey = hotKey
         
         self.hotKeyLabel = tk.Label(self, text=self.hotKey.format(), width=15, background="grey")
@@ -27,10 +26,10 @@ class HotkeyWidget(tk.Frame):
     def record(self, event):
         if(self.isActive):
             print(event.keycode)
-            if(event.keycode > 95 and event.keycode < 106):
-                pressedKey = keyboard.KeyCode(vk=event.keycode)
-                self.hotKey.combination.add(pressedKey)
-            elif(event.keysym in hotKeyLookUp.keys()):
+            # if(event.keycode > 95 and event.keycode < 106):
+            #     pressedKey = keyboard.KeyCode(vk=event.keycode)
+            #     self.hotKey.combination.add(pressedKey)
+            if(event.keysym in hotKeyLookUp.keys()):
                 pressedKey = hotKeyLookUp[event.keysym]
                 self.hotKey.combination.add(pressedKey)
             else:
