@@ -1,11 +1,13 @@
 import tkinter as tk
-from tkinter import ttk
 from sys import platform
+from tkinter import ttk
+
 from pynput import mouse
-import macroManager
-from tool import Tool
+
 import hotkey
+import macroManager
 from hotkeywidget import HotkeyWidget
+from tool import Tool
 
 class ToolList(ttk.Treeview):
 	def __init__(self, master=None):
@@ -219,7 +221,7 @@ class App(tk.Tk):
 		rightClickMenu2 = tk.Menu(self, tearoff=False)
 		rightClickMenu2.add_command(label="New Tool", command=self.ToolPopup)
 
-		if(type(event.widget) == ToolList):
+		if(isinstance(event.widget, ToolList)):
 			if(selectedItem != ''):
 				self.toolList.selection_set(selectedItem)
 				rightClickMenu.tk_popup(event.x_root, event.y_root)
@@ -227,7 +229,7 @@ class App(tk.Tk):
 				rightClickMenu2.tk_popup(event.x_root, event.y_root)
 			
 	def LeftClick(self, event):
-		if(type(event.widget) == ToolList):
+		if(isinstance(event.widget, ToolList)):
 			selectedItem = self.toolList.identify("item", event.x, event.y)
 			if(selectedItem == ''):
 				self.toolList.deslectAll()

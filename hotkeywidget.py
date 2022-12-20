@@ -26,9 +26,6 @@ class HotkeyWidget(tk.Frame):
     def record(self, event):
         if(self.isActive):
             print(event.keycode)
-            # if(event.keycode > 95 and event.keycode < 106):
-            #     pressedKey = keyboard.KeyCode(vk=event.keycode)
-            #     self.hotKey.combination.add(pressedKey)
             if(event.keysym in hotKeyLookUp.keys()):
                 pressedKey = hotKeyLookUp[event.keysym]
                 self.hotKey.combination.add(pressedKey)

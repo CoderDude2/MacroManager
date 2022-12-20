@@ -1,14 +1,17 @@
 # Create a revised MacroManager script, this is mainly to allow for a more versatile key recording system
-
 from pynput import keyboard
 import tkinter as tk
 import hotkey
+from sys import platform
 
 allowedKeys = {
     keyboard.Key.shift,
     keyboard.Key.alt,
     keyboard.Key.ctrl
 }
+
+win32_numpad = list(range(96, 106))
+darwin_numpad = list(range(82, 93))
 
 class Listener():
     def __init__(self):
@@ -21,10 +24,11 @@ class Listener():
         self.current = set()
 
     def on_press(self, key):
-        # Remove any modifiers from the key
-        if(hasattr(key, 'vk') and 82 <= key.vk <= 92):
+        # Check if the incoming key is from the number pad, if so don't convert to number. Otherwise just use the passed key
+        if(hasattr(key, 'vk') and platform == "win32" and key.vk in win32_numpad):
             key = keyboard.KeyCode(vk=key.vk)
-            print(key)
+        elif((key, 'vk') and platform == "darwin" and key.vk in darwin_numpad):
+            key = keyboard.KeyCode(vk=key.vk)
         else:    
             key = keyboard.Listener().canonical(key)
 
