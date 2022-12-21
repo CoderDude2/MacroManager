@@ -130,9 +130,9 @@ class App(tk.Tk):
 
 		hotKeyLabel = tk.Label(self.popupWindow, text="Hotkey")
 		if(createTool):
-			self.hotkeyWidget = HotkeyWidget(self.popupWindow, self._macroManager.listener, self.hotKey)
+			self.hotkeyWidget = HotkeyWidget(self.popupWindow, self._macroManager.listener)
 		else:
-			self.hotkeyWidget = HotkeyWidget(self.popupWindow, self._macroManager.listener,self.hotKey)
+			self.hotkeyWidget = HotkeyWidget(self.popupWindow, self._macroManager.listener, self.hotKey)
 
 		positionLabel = tk.Label(self.popupWindow, text="Position")
 
@@ -173,7 +173,7 @@ class App(tk.Tk):
 
 		# ------------------------------------[ Event Handling ]------------------------------------
 		self.popupWindow.bind("<space>", self.toggleMouseTrackingOff)
-		self.popupWindow.bind("<KeyPress>", self.hotkeyWidget.record)
+		# self.popupWindow.bind("<KeyPress>", self.hotkeyWidget.record)
 
 		mouseListener = mouse.Listener(on_move=self.update_coordinates)
 		mouseListener.start()
@@ -242,30 +242,23 @@ class App(tk.Tk):
 		self._macroManager.addTool(tool)
 
 	def removeTool(self, event=None):
-		selectedItem = self.toolList.selection()[0]
-		item = self.toolList.item(selectedItem)['values']
-		selectedTool = Tool(str(item[0]), hotkey.parse(item[1]), tuple(int(i) for i in item[2].split(' ')))
-
-		if(self.getSelectedTool() in self._macroManager.tools):
-			self._macroManager.removeTool(self._macroManager.tools.index(selectedTool))
-
-		self.toolList.delete(selectedItem)
+		if(len(self.toolList.selection()) > 0):
+			selectedItem = self.toolList.selection()[0]
+			selectedIndex = self.toolList.index(selectedItem)
+			self._macroManager.removeTool(selectedIndex)
+			self.toolList.delete(selectedItem)
 	
 	def editTool(self, tool):
-		selectedItem = self.toolList.selection()[0]
-		item = self.toolList.item(selectedItem)['values']
-		selectedTool = Tool(str(item[0]), hotkey.parse(item[1]), tuple(int(i) for i in item[2].split(' ')))
-
-		if (selectedTool in self._macroManager.tools):
-			self._macroManager.tools[self._macroManager.tools.index(selectedTool)] = tool
-		self.toolList.edit_tool(tool)
+		if(len(self.toolList.selection()) > 0):
+			selected_item = self.toolList.selection()[0]
+			selected_index = self.toolList.index(selected_item)
+			self._macroManager.tools[selected_index] = tool
+			self.toolList.edit_tool(tool)
 
 	def duplicate(self):
-		selectedItem = self.toolList.selection()[0]
-		item = self.toolList.item(selectedItem)['values']
-		selectedTool = Tool(str(item[0]), hotkey.parse(item[1]), tuple(int(i) for i in item[2].split(' ')))
-
-		self.addTool(selectedTool)
+		selected_item = self.toolList.selection()[0]
+		selected_index = self.toolList.index(selected_item)
+		self.addTool(self._macroManager.tools[selected_index])
 
 	def loadTools(self):
 		tools = macroManager.loadFromJson()

@@ -23,7 +23,7 @@ class HotKey:
                 # Convert to a string value and remove the first and last character, then convert to an integer
                 key = int(str(key.value)[1:-1])
                 serializedCombination.append(key)
-            elif(isNumpad(key)):
+            elif(hasattr(key, 'vk') and isNumpad(key.vk)):
                 serializedCombination.append(key.vk)
             else:
                serializedCombination.append(str(key.char))

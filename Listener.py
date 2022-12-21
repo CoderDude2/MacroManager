@@ -29,14 +29,11 @@ class Listener():
         if(self.recordKeys):
             if(key in allowedKeys):
                 self.hotKey.combination.add(key)
-                # print(self.hotKey)
             if(hasattr(key, 'char')):
                 if(key.char is not None):
                     self.hotKey.combination.add(key)
-                    # print(self.hotKey)
             if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
                 self.hotKey.combination.add(key)
-                # print(self.hotKey)
             
             if(len(self.hotKey.combination) >= 3):
                 self.disableRecording()
@@ -73,7 +70,6 @@ class Listener():
         self.listening = False
 
     def getRecordedHotkey(self):
-        # print(self.hotKey)
         return self.hotKey
 
     def startListener(self):

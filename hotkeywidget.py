@@ -2,15 +2,6 @@ import tkinter as tk
 from pynput import keyboard
 import hotkey
 
-hotKeyLookUp = {
-    "Shift_L": keyboard.Key.shift,
-    "Shift_R": keyboard.Key.shift,
-    "Control_L": keyboard.Key.ctrl,
-    "Control_R": keyboard.Key.ctrl,
-    "Alt_L": keyboard.Key.alt,
-    "Alt_R": keyboard.Key.alt
-}
-
 class HotkeyWidget(tk.Frame):
     def __init__(self, master=None, listener=None, hotKey=None):
         super().__init__(master)
