@@ -1,8 +1,6 @@
 # Create a revised MacroManager script, this is mainly to allow for a more versatile key recording system
 from pynput import keyboard
-import tkinter as tk
 import hotkey
-from sys import platform
 
 allowedKeys = {
     keyboard.Key.shift,
@@ -10,65 +8,69 @@ allowedKeys = {
     keyboard.Key.ctrl
 }
 
-win32_numpad = list(range(96, 106))
-darwin_numpad = list(range(82, 93))
-
 class Listener():
-    def __init__(self):
-        self.listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
+    def __init__(self, onPress=None):
+        self.listener = keyboard.Listener(on_press=lambda key:self.on_press(key, callback=onPress), on_release=self.on_release)
 
         self.recordKeys = False
         self.hotKey = hotkey.HotKey()
 
-        self.listen = False
+        self.listening = True
         self.current = set()
 
-    def on_press(self, key):
-        # Check if the incoming key is from the number pad, if so don't convert to number. Otherwise just use the passed key
-        if(hasattr(key, 'vk') and platform == "win32" and key.vk in win32_numpad):
+    def on_press(self, key, callback=None):
+        # Check if the incoming key is from the number pad, if so use the virtual key code and not the char. Otherwise just use the passed key
+        if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
             key = keyboard.KeyCode(vk=key.vk)
-        elif((key, 'vk') and platform == "darwin" and key.vk in darwin_numpad):
-            key = keyboard.KeyCode(vk=key.vk)
-        else:    
+        else:
             key = keyboard.Listener().canonical(key)
 
         # If recording hotkeys is activated, add the key to a HotKey object
         if(self.recordKeys):
             if(key in allowedKeys):
                 self.hotKey.combination.add(key)
-                print(self.hotKey)
-            
-            elif( isinstance(key, keyboard.KeyCode) ):
+                # print(self.hotKey)
+            if(hasattr(key, 'char')):
+                if(key.char is not None):
+                    self.hotKey.combination.add(key)
+                    # print(self.hotKey)
+            if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
                 self.hotKey.combination.add(key)
-                print(self.hotKey)
+                # print(self.hotKey)
             
             if(len(self.hotKey.combination) >= 3):
-                self.disableRecord()
+                self.disableRecording()
     
-        # If listening, we are going to add the hotkey to the "current" set, and perform checks
-        if(self.listen):
-            self.current.add(key)
+        self.current.add(key)
+
+        # Add a way to activate external callbacks
+        if(callback != None and self.listening):
+            callback()
 
     def on_release(self, key):
-        key = keyboard.Listener().canonical(key)
+        if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
+            key = keyboard.KeyCode(vk=key.vk)
+        else:
+            key = keyboard.Listener().canonical(key)
+        
         if(key in self.current):
             self.current.remove(key)
+        if(len(self.current) <= 1):
+            self.current.clear()
 
-    def enableRecord(self):
+    def enableRecording(self):
         self.hotKey.combination.clear()
         self.recordKeys = True
         self.disableListening()
     
-    def disableRecord(self):
+    def disableRecording(self):
         self.recordKeys = False
 
     def enableListening(self):
-        print(self.hotKey)
-        self.listen = True
-        self.disableRecord()
+        self.listening = True
 
     def disableListening(self):
-        self.listen = False
+        self.listening = False
 
     def getRecordedHotkey(self):
         # print(self.hotKey)
@@ -76,29 +78,3 @@ class Listener():
 
     def startListener(self):
         self.listener.start()
-
-
-class Test:
-    def __init__(self, listener):
-        self.listener = listener
-    
-    def getListenerDetails(self):
-        print(self.listener.getRecordedHotkey().format())
-
-root = tk.Tk()
-
-keyboardListener = Listener()
-
-t = Test(keyboardListener)
-
-enableRecordingButton = tk.Button(root, text="Enable Recording",command=keyboardListener.enableRecord)
-disableRecordingButton = tk.Button(root, text="Disable Recording",command=keyboardListener.disableRecord)
-getRecordedKeysButton = tk.Button(root, text="Get Keys",command=t.getListenerDetails)
-
-enableRecordingButton.pack()
-disableRecordingButton.pack()
-getRecordedKeysButton.pack()
-
-keyboardListener.startListener()
-
-root.mainloop()

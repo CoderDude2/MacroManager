@@ -8,7 +8,9 @@ hotKeyLookup = {
 }
 
 win32_numpad = list(range(96, 106))
-darwin_numpad = list(range(82, 93))
+
+# For some reason the Apple numpad is sequential up to 7, than it skips a vk and continues
+darwin_numpad = list(range(82, 90)) + [91,92]
 
 class HotKey:
     def __init__(self, combination=set()):
@@ -32,11 +34,14 @@ class HotKey:
         for key in self.combination:
             if(str(key) in hotKeyLookup.keys()):
                 formattedHotkey.insert(0, hotKeyLookup[str(key)])
-            elif(isNumpad(key)):
+            elif(hasattr(key, 'vk') and isNumpad(key.vk)):
                 if(platform == "win32"):
                     formattedHotkey.append(f'Num{str(key.vk-96)}')
                 elif(platform == "darwin"):
-                    formattedHotkey.append(f'Num{str(key.vk-82)}')
+                    if(key.vk < 90):
+                        formattedHotkey.append(f'Num{str(key.vk-82)}')
+                    else:
+                        formattedHotkey.append(f'Num{str(key.vk-83)}')
             elif(isinstance(key, pynput.keyboard.KeyCode)):
                 formattedHotkey.append(str(key.char))
         
@@ -71,10 +76,10 @@ def deserialize(hotkey):
     
     return HotKey(combination=deserializedCombination)
 
-def isNumpad(key):
-        if(hasattr(key, 'vk') and platform == "win32" and key.vk in win32_numpad):
+def isNumpad(vk):
+        if(platform == "win32" and vk in win32_numpad):
             return True
-        elif(hasattr(key, 'vk') and platform == "darwin" and key.vk in darwin_numpad):
+        elif(platform == "darwin" and vk in darwin_numpad):
             return True
         return False
 
