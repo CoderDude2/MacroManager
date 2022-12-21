@@ -1,30 +1,20 @@
-from pynput import keyboard
-import pyautogui
-from tool import deserialize
 import json
+import pyautogui
+from Listener import Listener
+from tool import deserialize
 
 class MacroManager:
     def __init__(self, tools=[]):
+        self.listener = Listener(onPress=self.checkHotkey)
         self.tools = tools
-        self.current = set()
-        
-    def startListening(self):
-        self.listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
-        self.listener.start()
+
+        self.listener.startListener()
+        self.run = True
     
-    def on_press(self, key):
-        key = keyboard.Listener.canonical(keyboard.Listener(), key)
-        self.current.add(key)
+    def checkHotkey(self):
         for tool in self.tools:
-            if(tool.hotKey.compare(self.current)):
+            if(tool.hotKey.compare(self.listener.current)):
                 self.activate(tool.position)
-    
-    def on_release(self, key):
-        key = keyboard.Listener.canonical(keyboard.Listener(), key)
-        if(key in self.current):
-            self.current.remove(key)
-        if(len(self.current) <= 1):
-            self.current.clear()
 
     def addTool(self, tool):
         self.tools.append(tool)
@@ -34,8 +24,7 @@ class MacroManager:
 
     def activate(self, position):
         originalPosition = pyautogui.position()
-        pyautogui.moveTo(position[0], position[1])
-        pyautogui.click()
+        pyautogui.click(position[0], position[1])
         pyautogui.moveTo(originalPosition.x, originalPosition.y)
 
 def saveToJson(contents):
