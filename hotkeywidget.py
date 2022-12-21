@@ -8,15 +8,18 @@ hotKeyLookUp = {
     "Control_L": keyboard.Key.ctrl,
     "Control_R": keyboard.Key.ctrl,
     "Alt_L": keyboard.Key.alt,
-    "Alt_R": keyboard.Key.alt,
+    "Alt_R": keyboard.Key.alt
 }
 
 class HotkeyWidget(tk.Frame):
-    def __init__(self, master=None, hotKey=None):
+    def __init__(self, master=None, listener=None, hotKey=None):
         super().__init__(master)
-        self.isActive = False
 
-        self.hotKey = hotKey
+        self.isActive = False
+        if(hotKey is None):
+            self.hotKey = hotkey.HotKey()
+        else:
+            self.hotKey = hotKey
         
         self.hotKeyLabel = tk.Label(self, text=self.hotKey.format(), width=15, background="grey")
         self.toggleButton = tk.Button(self, text="Set Hotkey", command=self.toggleHotkeyRecording)
@@ -24,16 +27,12 @@ class HotkeyWidget(tk.Frame):
         self.hotKeyLabel.pack(side=tk.LEFT)
         self.toggleButton.pack(side=tk.LEFT)
 
+        self.listener = listener
+
     def record(self, event):
-        if(self.isActive):
-            if(event.keysym in hotKeyLookUp.keys()):
-                pressedKey = hotKeyLookUp[event.keysym]
-                self.hotKey.combination.add(pressedKey)
-            else:
-                pressedKey = event.char
-                if(pressedKey != ''):
-                    self.hotKey.combination.add(keyboard.KeyCode(char=pressedKey))
-            self.hotKeyLabel.config(text=self.hotKey.format())
+        self.hotKey = self.listener.getRecordedHotkey()
+        self.hotKeyLabel.config(text=self.hotKey.format())
+        
         if(len(self.hotKey.combination) > 1):
             self.toggleButton.configure(state=tk.NORMAL)
         if(len(self.hotKey.combination) == 3):
@@ -44,13 +43,18 @@ class HotkeyWidget(tk.Frame):
 
     def activate(self):
         self.master.focus_set()
+        self.master.bind("<KeyPress>", self.record)
+        self.listener.enableRecording()
+
         self.toggleButton.configure(state=tk.DISABLED, text="Save")
         self.hotKeyLabel.config(text="")
+
         self.hotKey.combination = set()
         self.isActive = True
 
     def deActivate(self):
         self.isActive = False
+        self.listener.disableRecording()
         self.toggleButton.configure(text="Set Hotkey")
 
     def toggleHotkeyRecording(self):

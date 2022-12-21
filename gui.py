@@ -1,11 +1,13 @@
 import tkinter as tk
-from tkinter import ttk
 from sys import platform
+from tkinter import ttk
+
 from pynput import mouse
-import macroManager
-from tool import Tool
+
 import hotkey
+import macroManager
 from hotkeywidget import HotkeyWidget
+from tool import Tool
 
 class ToolList(ttk.Treeview):
 	def __init__(self, master=None):
@@ -55,7 +57,7 @@ class App(tk.Tk):
 			# ------------------------------------[ Variables ]------------------------------------
 			self.toolPopupIsActive = False
 			self.isTracking = False
-			
+
 			# ------------------------------------[ App Structure ]------------------------------------
 			menuBar = MenuBar(self)
 			menuBar.file_menu.add_command(label="New Tool", command=self.ToolPopup)
@@ -66,7 +68,7 @@ class App(tk.Tk):
 
 			self.toolList = ToolList(self)
 			self.toolList.grid(row=0, column=0, sticky='news')
-			
+
 			# ------------------------------------[ Event Handling ]------------------------------------
 			self.bind("<Button-1>", self.LeftClick)
 
@@ -79,7 +81,6 @@ class App(tk.Tk):
 			self.bind("<BackSpace>", self.removeTool)
 
 			self._macroManager = macroManager.MacroManager()
-			self._macroManager.startListening()
 
 			self.loadTools()
 			
@@ -129,9 +130,9 @@ class App(tk.Tk):
 
 		hotKeyLabel = tk.Label(self.popupWindow, text="Hotkey")
 		if(createTool):
-			self.hotkeyWidget = HotkeyWidget(self.popupWindow, self.hotKey)
+			self.hotkeyWidget = HotkeyWidget(self.popupWindow, self._macroManager.listener, self.hotKey)
 		else:
-			self.hotkeyWidget = HotkeyWidget(self.popupWindow, self.hotKey)
+			self.hotkeyWidget = HotkeyWidget(self.popupWindow, self._macroManager.listener,self.hotKey)
 
 		positionLabel = tk.Label(self.popupWindow, text="Position")
 
@@ -177,9 +178,12 @@ class App(tk.Tk):
 		mouseListener = mouse.Listener(on_move=self.update_coordinates)
 		mouseListener.start()
 
+		self._macroManager.listener.disableListening()
+
 	def cancelButton(self):
 		self.popupWindow.destroy()
 		self.toolPopupIsActive = False
+		self._macroManager.listener.enableListening()
 
 	def submitButton(self, createTool=True):
 		tool = Tool(self.toolName.get(), self.hotkeyWidget.getHotkey(), (self.xPosition.get(), self.yPosition.get()))
@@ -189,6 +193,7 @@ class App(tk.Tk):
 			self.editTool(tool)
 		self.popupWindow.destroy()
 		self.toolPopupIsActive = False
+		self._macroManager.listener.enableListening()
 
 	def update_coordinates(self, x,y):
 		if(self.isTracking):
@@ -212,14 +217,14 @@ class App(tk.Tk):
 
 		rightClickMenu = tk.Menu(self, tearoff=False)
 		rightClickMenu.add_command(label="Edit", command=lambda:self.ToolPopup(createTool=False, tool=tool))
-		rightClickMenu.add_command(label="Duplicate", command=lambda:self.duplicate(tool))
+		rightClickMenu.add_command(label="Duplicate", command=self.duplicate)
 		rightClickMenu.add_separator()
 		rightClickMenu.add_command(label="Delete", command=self.removeTool)
 
 		rightClickMenu2 = tk.Menu(self, tearoff=False)
 		rightClickMenu2.add_command(label="New Tool", command=self.ToolPopup)
 
-		if(type(event.widget) == ToolList):
+		if(isinstance(event.widget, ToolList)):
 			if(selectedItem != ''):
 				self.toolList.selection_set(selectedItem)
 				rightClickMenu.tk_popup(event.x_root, event.y_root)
@@ -227,7 +232,7 @@ class App(tk.Tk):
 				rightClickMenu2.tk_popup(event.x_root, event.y_root)
 			
 	def LeftClick(self, event):
-		if(type(event.widget) == ToolList):
+		if(isinstance(event.widget, ToolList)):
 			selectedItem = self.toolList.identify("item", event.x, event.y)
 			if(selectedItem == ''):
 				self.toolList.deslectAll()
@@ -235,13 +240,13 @@ class App(tk.Tk):
 	def addTool(self, tool):
 		self.toolList.add_tool(tool)
 		self._macroManager.addTool(tool)
-	
+
 	def removeTool(self, event=None):
 		selectedItem = self.toolList.selection()[0]
 		item = self.toolList.item(selectedItem)['values']
 		selectedTool = Tool(str(item[0]), hotkey.parse(item[1]), tuple(int(i) for i in item[2].split(' ')))
 
-		if(selectedTool in self._macroManager.tools):
+		if(self.getSelectedTool() in self._macroManager.tools):
 			self._macroManager.removeTool(self._macroManager.tools.index(selectedTool))
 
 		self.toolList.delete(selectedItem)
@@ -255,8 +260,12 @@ class App(tk.Tk):
 			self._macroManager.tools[self._macroManager.tools.index(selectedTool)] = tool
 		self.toolList.edit_tool(tool)
 
-	def duplicate(self, tool):
-		self.addTool(tool)
+	def duplicate(self):
+		selectedItem = self.toolList.selection()[0]
+		item = self.toolList.item(selectedItem)['values']
+		selectedTool = Tool(str(item[0]), hotkey.parse(item[1]), tuple(int(i) for i in item[2].split(' ')))
+
+		self.addTool(selectedTool)
 
 	def loadTools(self):
 		tools = macroManager.loadFromJson()
