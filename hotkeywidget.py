@@ -46,7 +46,6 @@ class HotkeyWidget(tk.Frame):
                 self.deActivate()
 
     def getHotkey(self):
-        # print(self.hotKey)
         return self.hotKey
 
     def activate(self):
