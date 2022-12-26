@@ -96,10 +96,3 @@ class HotkeyWidget(tk.Frame):
         elif(keysym.isalnum() and len(keysym) == 1):
             key =  keyboard.Listener().canonical(keyboard.KeyCode().from_char(char=keysym))
             return key
-
-
-if __name__ == '__main__':
-    root = tk.Tk()
-    hW = HotkeyWidget(root)
-    hW.pack()
-    root.mainloop()
