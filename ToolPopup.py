@@ -122,10 +122,3 @@ class ToolPopup(tk.Toplevel):
         if(self.on_cancel is not None):
             self.on_cancel()
         self.destroy()
-
-    # def clearForm(self):
-    #     self.toolName.set("")
-    #     self.xPosition.set(0)
-    #     self.yPosition.set(0)
-    #     self.hotKey = hotkey.HotKey()
-    #     self.hotkeyWidget.clear()

@@ -23,7 +23,7 @@ class HotKey:
                 # Convert the key to its associated vk
                 key = int(str(key.value)[1:-1])
                 serializedCombination.append(key)
-            elif(isNumpad(key)):
+            elif(isNumpad(key.vk)):
                 serializedCombination.append(key.vk)
             else:
                serializedCombination.append(str(key.char))
