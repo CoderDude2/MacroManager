@@ -1,8 +1,10 @@
 import tkinter as tk
+from sys import platform
 from pynput import keyboard
 import hotkey
 
-hotKeyLookUp = {
+
+modifier_keys = {
     "Shift_L": keyboard.Key.shift,
     "Shift_R": keyboard.Key.shift,
     "Control_L": keyboard.Key.ctrl,
@@ -12,14 +14,15 @@ hotKeyLookUp = {
 }
 
 class HotkeyWidget(tk.Frame):
-    def __init__(self, master=None, listener=None, hotKey=None):
+    def __init__(self, master=None, hotKey=None):
         super().__init__(master)
+        self.master = master
 
         self.isActive = False
-        if(hotKey is None):
-            self.hotKey = hotkey.HotKey()
-        else:
+        if(hotKey is not None):
             self.hotKey = hotKey
+        else:
+            self.hotKey = hotkey.HotKey()
         
         self.hotKeyLabel = tk.Label(self, text=self.hotKey.format(), width=15, background="grey")
         self.toggleButton = tk.Button(self, text="Set Hotkey", command=self.toggleHotkeyRecording)
@@ -27,24 +30,27 @@ class HotkeyWidget(tk.Frame):
         self.hotKeyLabel.pack(side=tk.LEFT)
         self.toggleButton.pack(side=tk.LEFT)
 
-        self.listener = listener
+        self.master.bind("<KeyPress>", self.record)
 
     def record(self, event):
-        self.hotKey = self.listener.getRecordedHotkey()
-        self.hotKeyLabel.config(text=self.hotKey.format())
-        
-        if(len(self.hotKey.combination) > 1):
-            self.toggleButton.configure(state=tk.NORMAL)
-        if(len(self.hotKey.combination) == 3):
-            self.deActivate()
+        if(self.isActive):
+            key = self.convertToKey(event.keysym)
+            if(key is not None):
+                self.hotKey.combination.add(key)
+            
+            self.hotKeyLabel.config(text=self.hotKey.format())
+            
+            if(len(self.hotKey.combination) > 1):
+                self.toggleButton.configure(state=tk.NORMAL)
+            if(len(self.hotKey.combination) == 3):
+                self.deActivate()
 
     def getHotkey(self):
+        # print(self.hotKey)
         return self.hotKey
 
     def activate(self):
         self.master.focus_set()
-        self.master.bind("<KeyPress>", self.record)
-        self.listener.enableRecording()
 
         self.toggleButton.configure(state=tk.DISABLED, text="Save")
         self.hotKeyLabel.config(text="")
@@ -54,7 +60,6 @@ class HotkeyWidget(tk.Frame):
 
     def deActivate(self):
         self.isActive = False
-        self.listener.disableRecording()
         self.toggleButton.configure(text="Set Hotkey")
 
     def toggleHotkeyRecording(self):
@@ -62,3 +67,40 @@ class HotkeyWidget(tk.Frame):
             self.activate()
             return
         self.deActivate()
+
+    def isNumpad(self, keysym):
+        if("KP" in keysym):
+            if(keysym.split("_")[1].isdigit()):
+                return True
+        return False
+
+    def isModifier(self, keysym):
+        if(keysym in modifier_keys.keys()):
+            return True
+        return False
+
+    def clear(self):
+        self.hotKey.combination.clear()
+        self.hotKeyLabel.configure(text="")
+
+    def convertToKey(self ,keysym):
+        if(self.isNumpad(keysym)):
+            if(platform == 'win32'):
+                keyVK = hotkey.win32_numpad[ int(keysym.split("_")[1]) ]
+            elif(platform == 'darwin'):
+                keyVK = hotkey.darwin_numpad[ int(keysym.split("_")[1]) ]
+            key = keyboard.KeyCode().from_vk(keyVK)
+            return key
+        elif(self.isModifier(keysym)):
+            key = modifier_keys[keysym]
+            return key
+        elif(keysym.isalnum() and len(keysym) == 1):
+            key =  keyboard.Listener().canonical(keyboard.KeyCode().from_char(char=keysym))
+            return key
+
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    hW = HotkeyWidget(root)
+    hW.pack()
+    root.mainloop()

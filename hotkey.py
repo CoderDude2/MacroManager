@@ -20,7 +20,7 @@ class HotKey:
         serializedCombination = []
         for key in self.combination:
             if(isinstance(key, pynput.keyboard.Key)):
-                # Convert to a string value and remove the first and last character, then convert to an integer
+                # Convert the key to its associated vk
                 key = int(str(key.value)[1:-1])
                 serializedCombination.append(key)
             elif(isNumpad(key)):
