@@ -6,7 +6,6 @@ import pyautogui
 from pynput import keyboard
 from tool import Tool, deserialize
 import hotkey
-import time
 
 class MacroManager:
     def __init__(self):
