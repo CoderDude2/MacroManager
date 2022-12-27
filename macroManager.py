@@ -6,6 +6,7 @@ import pyautogui
 from pynput import keyboard
 from tool import Tool, deserialize
 import hotkey
+import time
 
 class MacroManager:
     def __init__(self):
@@ -21,13 +22,21 @@ class MacroManager:
             listener.join()
 
     def on_press(self, key):
-        key = keyboard.Listener().canonical(key)
+        if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
+            key = keyboard.KeyCode.from_vk(key.vk)
+        else:
+            key = keyboard.Listener().canonical(key)
         self.current.add(key)
         if(self.isListening):
             self.checkHotkey()
+        print(self.current)
         return self.run
 
     def on_release(self, key):
+        if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
+            key = keyboard.KeyCode.from_vk(key.vk)
+        else:
+            key = keyboard.Listener().canonical(key)
         if(key in self.current):
             self.current.remove(key)
         if(len(self.current) == 1):
@@ -60,6 +69,7 @@ class MacroManager:
         self.saveToJson()
         self.run = False
         keyboard.Controller().press(keyboard.Key.shift)
+        keyboard.Controller().release(keyboard.Key.shift)
     
     def saveToJson(self):
         serializedTools = [tool.serialize() for tool in self.tools]

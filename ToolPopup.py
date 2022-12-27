@@ -63,7 +63,7 @@ class ToolPopup(tk.Toplevel):
         yLabel = tk.Label(self,text="Y")
         yEntry = tk.Entry(self, width=5, textvariable=self.yPosition)
 
-        setPositionButton = tk.Button(self, text="Set", command=self.enableMouseTracking)
+        self.setPositionButton = tk.Button(self, text="Set", command=self.enableMouseTracking)
 
         buttonContainer = tk.Frame(self)
         cancelButton = tk.Button(buttonContainer, text="Cancel", command=self.cancelButton)
@@ -85,7 +85,7 @@ class ToolPopup(tk.Toplevel):
         xEntry.grid(row=2, column=2, sticky='w')
         yLabel.grid(row=2, column=3)
         yEntry.grid(row=2, column=4, sticky='w')
-        setPositionButton.grid(row=2, column=5, sticky='w')
+        self.setPositionButton.grid(row=2, column=5, sticky='w')
         # ROW 3
         cancelButton.pack(side='left', fill='x', expand=True)
         submitButton.pack(side='right', fill='x', expand=True)
@@ -94,7 +94,7 @@ class ToolPopup(tk.Toplevel):
         # ------------------------------------[ Event Handling ]------------------------------------
         self.mouseController = mouse.Controller()
 
-        self.bind("<Motion>", self.setPosition)
+        # self.bind("<Motion>", self.setPosition)
         self.bind("<space>", self.disableMouseTracking)
     
     def setPosition(self, event=None):
@@ -103,10 +103,19 @@ class ToolPopup(tk.Toplevel):
             self.xPosition.set( round(mousePosition[0]) )
             self.yPosition.set( round(mousePosition[1]) )
 
+    def getPosition(self, event=None):
+        if(self.isTrackingMouse):
+            mousePosition = self.mouseController.position
+            self.xPosition.set( round(mousePosition[0]) )
+            self.yPosition.set( round(mousePosition[1]) )
+
     def enableMouseTracking(self, event=None):
+        self.setPositionButton.configure(state=tk.DISABLED)
         self.isTrackingMouse = True
     
     def disableMouseTracking(self, event=None):
+        self.setPositionButton.configure(state=tk.NORMAL)
+        self.getPosition()
         self.isTrackingMouse = False
     
     def getTool(self):
