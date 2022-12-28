@@ -73,7 +73,7 @@ class MacroManager:
     def saveToJson(self):
         serializedTools = [tool.serialize() for tool in self.tools]
         json_object = json.dumps(serializedTools, indent=4)
-        with open('tools.json', "w") as file:
+        with open('tools.json', "w+") as file:
             file.write(json_object)
 
     def loadFromJson(self):
