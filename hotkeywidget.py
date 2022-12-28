@@ -33,13 +33,11 @@ class HotkeyWidget(tk.Frame):
         self.master.bind("<KeyPress>", self.record)
 
     def record(self, event):
-        print(event)
         if(self.isActive):
             if(platform == "win32"):
                 key = self.convertToKeyWin32(event.keysym, event.keycode)
             elif(platform == "darwin"):
                 key = self.convertToKey(event.keysym)
-            print(key)
             if(key is not None):
                 self.hotKey.combination.add(key)
             

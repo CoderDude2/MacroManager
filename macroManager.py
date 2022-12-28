@@ -28,7 +28,6 @@ class MacroManager:
         self.current.add(key)
         if(self.isListening):
             self.checkHotkey()
-        print(self.current)
         return self.run
 
     def on_release(self, key):
