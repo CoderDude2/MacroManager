@@ -136,12 +136,11 @@ class App(tk.Tk):
 		self._macroManager.isListening = True
 
 	def removeTool(self, event=None):
-		if(len(self.toolList.selection()) > 0):
-			selectedItem = self.toolList.selection()[0]
+		for selectedItem in self.toolList.selection():
 			selectedIndex = self.toolList.index(selectedItem)
 
 			self._macroManager.removeTool(selectedIndex)
-			self.toolList.delete_tool()
+			self.toolList.delete_tool()		
 
 	def duplicateTool(self, event=None):
 		selectedItem = self.toolList.selection()[0]
