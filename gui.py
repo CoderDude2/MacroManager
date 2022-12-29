@@ -4,7 +4,6 @@ from tkinter import ttk
 from sys import platform
 
 import macroManager
-from tool import Tool
 from ToolPopup import ToolPopup
 
 class ToolList(ttk.Treeview):
@@ -55,12 +54,13 @@ class App(tk.Tk):
 			# ------------------------------------[ Variables ]------------------------------------
 			
 			# ------------------------------------[ App Structure ]------------------------------------
-			menuBar = MenuBar(self)
+			self.menuBar = MenuBar(self)
 
-			menuBar.file_menu.add_command(label="New Tool", command=self.newToolPopup)
-			menuBar.file_menu.add_separator()
-			menuBar.file_menu.add_command(label="Exit", command=self.on_close)
-			self.config(menu=menuBar)
+			self.menuBar.file_menu.add_command(label="New Tool", command=self.newToolPopup)
+			self.menuBar.file_menu.add_command(label="Disable Listening", command=self.toggleListening)
+			self.menuBar.file_menu.add_separator()
+			self.menuBar.file_menu.add_command(label="Exit", command=self.on_close)
+			self.config(menu=self.menuBar)
 
 			self.toolList = ToolList(self)
 			self.toolList.grid(row=0, column=0, sticky='news')
@@ -80,6 +80,16 @@ class App(tk.Tk):
 			self._macroManager = macroManager.MacroManager()
 			for tool in self._macroManager.tools:
 				self.toolList.add_tool(tool)
+
+	def toggleListening(self):
+		if(self._macroManager.isListening):
+			self.menuBar.file_menu.entryconfigure(1, label="Enable Listening")
+			self._macroManager.isListening = False
+			self.title("Macro Manager (Listening Disabled)")
+		else:
+			self.menuBar.file_menu.entryconfigure(1, label="Disable Listening")
+			self._macroManager.isListening = True
+			self.title("Macro Manager")
 
 	def submitButton(self):
 		self.popupWindow.destroy()
