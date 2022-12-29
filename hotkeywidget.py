@@ -3,7 +3,6 @@ from sys import platform
 from pynput import keyboard
 import hotkey
 
-
 modifier_keys = {
     "Shift_L": keyboard.Key.shift,
     "Shift_R": keyboard.Key.shift,
@@ -34,7 +33,10 @@ class HotkeyWidget(tk.Frame):
 
     def record(self, event):
         if(self.isActive):
-            key = self.convertToKey(event.keysym)
+            if(platform == "win32"):
+                key = self.convertToKeyWin32(event.keysym, event.keycode)
+            elif(platform == "darwin"):
+                key = self.convertToKeyDarwin(event.keysym)
             if(key is not None):
                 self.hotKey.combination.add(key)
             
@@ -49,17 +51,22 @@ class HotkeyWidget(tk.Frame):
         return self.hotKey
 
     def activate(self):
+        self.isActive = True
         self.master.focus_set()
 
         self.toggleButton.configure(state=tk.DISABLED, text="Save")
+
         self.hotKeyLabel.config(text="")
+        self.hotKey.combination.clear()
+        
 
-        self.hotKey.combination = set()
-        self.isActive = True
-
-    def deActivate(self):
+    def deActivate(self, event=None):
         self.isActive = False
-        self.toggleButton.configure(text="Set Hotkey")
+        self.toggleButton.configure(text="Set Hotkey", state=tk.NORMAL)
+
+        if(len(self.hotKey.combination) <= 1):
+            self.hotKey.combination.clear()
+            self.hotKeyLabel.configure(text="")
 
     def toggleHotkeyRecording(self):
         if(not self.isActive):
@@ -73,6 +80,12 @@ class HotkeyWidget(tk.Frame):
                 return True
         return False
 
+    def isNumpadKeyCode(self, keycode):
+        if(platform == "win32"):
+            return True if keycode in hotkey.win32_numpad else False
+        elif(platform == "darwin"):
+            pass
+
     def isModifier(self, keysym):
         if(keysym in modifier_keys.keys()):
             return True
@@ -82,12 +95,20 @@ class HotkeyWidget(tk.Frame):
         self.hotKey.combination.clear()
         self.hotKeyLabel.configure(text="")
 
-    def convertToKey(self ,keysym):
+    def convertToKeyWin32(self, keysym, keycode):
+        if(self.isNumpadKeyCode(keycode)):
+            key = keyboard.KeyCode().from_vk(keycode)
+            return key
+        elif(self.isModifier(keysym)):
+            key = modifier_keys[keysym]
+            return key
+        elif(keysym.isalnum() and len(keysym) == 1):
+            key =  keyboard.Listener().canonical(keyboard.KeyCode().from_char(char=keysym))
+            return key
+
+    def convertToKeyDarwin(self, keysym):
         if(self.isNumpad(keysym)):
-            if(platform == 'win32'):
-                keyVK = hotkey.win32_numpad[ int(keysym.split("_")[1]) ]
-            elif(platform == 'darwin'):
-                keyVK = hotkey.darwin_numpad[ int(keysym.split("_")[1]) ]
+            keyVK = hotkey.darwin_numpad[ int(keysym.split("_")[1]) ]
             key = keyboard.KeyCode().from_vk(keyVK)
             return key
         elif(self.isModifier(keysym)):

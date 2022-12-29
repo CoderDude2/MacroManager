@@ -1,5 +1,6 @@
 import threading
 import json
+from os.path import exists
 
 import pyautogui
 
@@ -21,13 +22,20 @@ class MacroManager:
             listener.join()
 
     def on_press(self, key):
-        key = keyboard.Listener().canonical(key)
+        if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
+            key = keyboard.KeyCode.from_vk(key.vk)
+        else:
+            key = keyboard.Listener().canonical(key)
         self.current.add(key)
         if(self.isListening):
             self.checkHotkey()
         return self.run
 
     def on_release(self, key):
+        if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
+            key = keyboard.KeyCode.from_vk(key.vk)
+        else:
+            key = keyboard.Listener().canonical(key)
         if(key in self.current):
             self.current.remove(key)
         if(len(self.current) == 1):
@@ -60,15 +68,19 @@ class MacroManager:
         self.saveToJson()
         self.run = False
         keyboard.Controller().press(keyboard.Key.shift)
+        keyboard.Controller().release(keyboard.Key.shift)
     
     def saveToJson(self):
         serializedTools = [tool.serialize() for tool in self.tools]
         json_object = json.dumps(serializedTools, indent=4)
-        with open('tools.json', "w") as file:
+        with open('tools.json', "w+") as file:
             file.write(json_object)
 
     def loadFromJson(self):
-        with open('tools.json', 'r') as file:
-            object = json.load(file)
-        deserializedTools = [deserialize(entry) for entry in object]
-        return deserializedTools
+        # Use the os module to determine if the tools.json file exists
+        if(exists("./tools.json")):
+            with open('tools.json', 'r') as file:
+                object = json.load(file)
+            deserializedTools = [deserialize(entry) for entry in object]
+            return deserializedTools
+        return []
