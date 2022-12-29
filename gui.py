@@ -4,7 +4,6 @@ from tkinter import ttk
 from sys import platform
 
 import macroManager
-from tool import Tool
 from ToolPopup import ToolPopup
 
 class ToolList(ttk.Treeview):

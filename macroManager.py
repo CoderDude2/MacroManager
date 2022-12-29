@@ -1,5 +1,6 @@
 import threading
 import json
+from os.path import exists
 
 import pyautogui
 
@@ -76,7 +77,10 @@ class MacroManager:
             file.write(json_object)
 
     def loadFromJson(self):
-        with open('tools.json', 'r') as file:
-            object = json.load(file)
-        deserializedTools = [deserialize(entry) for entry in object]
-        return deserializedTools
+        # Use the os module to determine if the tools.json file exists
+        if(exists("./tools.json")):
+            with open('tools.json', 'r') as file:
+                object = json.load(file)
+            deserializedTools = [deserialize(entry) for entry in object]
+            return deserializedTools
+        return []

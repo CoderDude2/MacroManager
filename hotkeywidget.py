@@ -3,7 +3,6 @@ from sys import platform
 from pynput import keyboard
 import hotkey
 
-
 modifier_keys = {
     "Shift_L": keyboard.Key.shift,
     "Shift_R": keyboard.Key.shift,
@@ -37,7 +36,7 @@ class HotkeyWidget(tk.Frame):
             if(platform == "win32"):
                 key = self.convertToKeyWin32(event.keysym, event.keycode)
             elif(platform == "darwin"):
-                key = self.convertToKey(event.keysym)
+                key = self.convertToKeyDarwin(event.keysym)
             if(key is not None):
                 self.hotKey.combination.add(key)
             
@@ -52,17 +51,22 @@ class HotkeyWidget(tk.Frame):
         return self.hotKey
 
     def activate(self):
+        self.isActive = True
         self.master.focus_set()
 
         self.toggleButton.configure(state=tk.DISABLED, text="Save")
+
         self.hotKeyLabel.config(text="")
+        self.hotKey.combination.clear()
+        
 
-        self.hotKey.combination = set()
-        self.isActive = True
-
-    def deActivate(self):
+    def deActivate(self, event=None):
         self.isActive = False
-        self.toggleButton.configure(text="Set Hotkey")
+        self.toggleButton.configure(text="Set Hotkey", state=tk.NORMAL)
+
+        if(len(self.hotKey.combination) <= 1):
+            self.hotKey.combination.clear()
+            self.hotKeyLabel.configure(text="")
 
     def toggleHotkeyRecording(self):
         if(not self.isActive):
