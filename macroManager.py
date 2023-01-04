@@ -1,12 +1,12 @@
-import threading
 import json
+import threading
 from os.path import exists
 
-import pyautogui
+from pynput import keyboard, mouse
 
-from pynput import keyboard
-from tool import Tool, deserialize
 import hotkey
+from tool import Tool, deserialize
+
 
 class MacroManager:
     def __init__(self):
@@ -36,12 +36,15 @@ class MacroManager:
             key = keyboard.KeyCode.from_vk(key.vk)
         else:
             key = keyboard.Listener().canonical(key)
+        
         if(key in self.current):
             self.current.remove(key)
+        
         if(len(self.current) == 1):
             self.current.clear()
 
     def checkHotkey(self):
+        # [self.activate(tool.position) for tool in self.tools if tool.hotKey.compare(self.current)]
         for tool in self.tools:
             if(tool.hotKey.compare(self.current)):
                 self.activate(tool.position)
@@ -60,9 +63,13 @@ class MacroManager:
         self.tools.pop(index)
 
     def activate(self, position):
-        originalPosition = pyautogui.position()
-        pyautogui.click(position[0], position[1])
-        pyautogui.moveTo(originalPosition.x, originalPosition.y)
+        mouse_controller = mouse.Controller()
+
+        originalPosition = mouse_controller.position
+
+        mouse_controller.position = position
+        mouse_controller.click(mouse.Button.left)
+        mouse_controller.position = originalPosition
 
     def stop(self):
         self.saveToJson()

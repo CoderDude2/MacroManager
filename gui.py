@@ -1,10 +1,10 @@
 import tkinter as tk
-from tkinter import ttk
-
 from sys import platform
+from tkinter import ttk
 
 import macroManager
 from ToolPopup import ToolPopup
+
 
 class ToolList(ttk.Treeview):
 	def __init__(self, master=None):
@@ -27,7 +27,7 @@ class ToolList(ttk.Treeview):
 		selected_item = self.selection()[0]
 		self.delete(selected_item)
 	
-	def deslectAll(self):
+	def deselectAll(self):
 		for item in self.selection():
 			self.selection_remove(item)
 
@@ -118,7 +118,7 @@ class App(tk.Tk):
 		if(isinstance(event.widget, ToolList)):
 			selectedItem = self.toolList.identify("item", event.x, event.y)
 			if(selectedItem == ''):
-				self.toolList.deslectAll()
+				self.toolList.deselectAll()
 
 	def addTool(self, tool):
 		self._macroManager.addTool(tool)
