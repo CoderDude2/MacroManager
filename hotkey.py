@@ -78,17 +78,3 @@ def isNumpad(vk):
         elif(platform == "darwin" and vk in darwin_numpad):
             return True
         return False
-
-def parse(combination):
-    parsedCombinaton = set()
-
-    for key in combination.split("+"):
-        if(key == "Shift"):
-            parsedCombinaton.add(pynput.keyboard.Key.shift)
-        elif(key == "Alt"):
-            parsedCombinaton.add(pynput.keyboard.Key.alt)
-        elif(key == "Ctrl"):
-            parsedCombinaton.add(pynput.keyboard.Key.ctrl)
-        else:
-            parsedCombinaton.add(pynput.keyboard.KeyCode(char=key))
-    return HotKey(combination=parsedCombinaton)

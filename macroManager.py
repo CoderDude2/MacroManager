@@ -1,6 +1,6 @@
 import json
 import threading
-from os.path import exists
+import os
 
 from pynput import keyboard, mouse
 
@@ -85,7 +85,7 @@ class MacroManager:
 
     def loadFromJson(self):
         # Use the os module to determine if the tools.json file exists
-        if(exists("./tools.json")):
+        if(os.exists("./tools.json")):
             with open('tools.json', 'r') as file:
                 object = json.load(file)
             deserializedTools = [deserialize(entry) for entry in object]
