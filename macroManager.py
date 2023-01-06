@@ -1,12 +1,13 @@
-import threading
 import json
-from os.path import exists
+import os
+import threading
+import time
+from copy import deepcopy
 
-import pyautogui
+from pynput import keyboard, mouse
 
-from pynput import keyboard
-from tool import Tool, deserialize
 import hotkey
+from tool import deserialize
 
 class MacroManager:
     def __init__(self):
@@ -36,12 +37,15 @@ class MacroManager:
             key = keyboard.KeyCode.from_vk(key.vk)
         else:
             key = keyboard.Listener().canonical(key)
+        
         if(key in self.current):
             self.current.remove(key)
+        
         if(len(self.current) == 1):
             self.current.clear()
 
     def checkHotkey(self):
+        # [self.activate(tool.position) for tool in self.tools if tool.hotKey.compare(self.current)]
         for tool in self.tools:
             if(tool.hotKey.compare(self.current)):
                 self.activate(tool.position)
@@ -50,19 +54,21 @@ class MacroManager:
         self.tools.append(tool)
 
     def duplicateTool(self, index):
-        tool = self.tools[index]
-        toolName = f'{tool.toolName} copy'
-        hotKey = hotkey.HotKey(combination=tool.hotKey.combination)
-        position = tool.position
-        self.tools.append(Tool(toolName, hotKey ,position))
+        tool = deepcopy(self.tools[index])
+        self.tools.append(tool)
 
     def removeTool(self, index):
         self.tools.pop(index)
 
     def activate(self, position):
-        originalPosition = pyautogui.position()
-        pyautogui.click(position[0], position[1])
-        pyautogui.moveTo(originalPosition.x, originalPosition.y)
+        mouse_controller = mouse.Controller()
+
+        originalPosition = mouse_controller.position
+
+        mouse_controller.position = position
+        time.sleep(0.01)
+        mouse_controller.click(mouse.Button.left)
+        mouse_controller.position = originalPosition
 
     def stop(self):
         self.saveToJson()
@@ -78,7 +84,7 @@ class MacroManager:
 
     def loadFromJson(self):
         # Use the os module to determine if the tools.json file exists
-        if(exists("./tools.json")):
+        if(os.path.exists("./tools.json")):
             with open('tools.json', 'r') as file:
                 object = json.load(file)
             deserializedTools = [deserialize(entry) for entry in object]

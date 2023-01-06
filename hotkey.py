@@ -1,14 +1,10 @@
-import pynput
 from sys import platform
 
-hotKeyLookup = {
-    str(pynput.keyboard.Key.alt): "Alt",
-    str(pynput.keyboard.Key.ctrl): "Ctrl",
-    str(pynput.keyboard.Key.shift): "Shift",
-}
+import pynput
+
+allowed_keys = ["shift", "alt", "ctrl"]
 
 win32_numpad = list(range(96, 106))
-
 # For some reason the Apple numpad is sequential up to 7, than it skips a vk and continues
 darwin_numpad = list(range(82, 90)) + [91,92]
 
@@ -31,21 +27,21 @@ class HotKey:
     
     def format(self):
         formattedHotkey = []
+
         for key in self.combination:
-            if(str(key) in hotKeyLookup.keys()):
-                formattedHotkey.insert(0, hotKeyLookup[str(key)])
-            elif(hasattr(key, 'vk') and isNumpad(key.vk)):
-                if(platform == "win32"):
-                    formattedHotkey.append(f'Num{str(key.vk-96)}')
-                elif(platform == "darwin"):
-                    if(key.vk < 90):
-                        formattedHotkey.append(f'Num{str(key.vk-82)}')
-                    else:
-                        formattedHotkey.append(f'Num{str(key.vk-83)}')
-            elif(isinstance(key, pynput.keyboard.KeyCode)):
-                formattedHotkey.append(str(key.char))
+            if(hasattr(key, "name") and key.name in allowed_keys):
+                formattedHotkey.insert(0, key.name.title())
+            elif(hasattr(key, 'vk') and isNumpad(key.vk) and platform == "win32"):
+                formattedHotkey.append(f'Num{key.vk-96}')
+            elif(hasattr(key, 'vk') and isNumpad(key.vk) and platform == "darwin"):
+                if(key.vk < 90):
+                    formattedHotkey.append(f'Num{key.vk-82}')
+                else:
+                    formattedHotkey.append(f'Num{key.vk-83}')
+            elif(hasattr(key, 'char')):
+                formattedHotkey.append(key.char)
         
-        # If the key is a character, move it to the front of the list
+        # If the key is a character, move it to the end of the list.
         for key in formattedHotkey:
             if(len(key) == 1):
                 poppedKey = formattedHotkey.pop(formattedHotkey.index(key))
@@ -82,17 +78,3 @@ def isNumpad(vk):
         elif(platform == "darwin" and vk in darwin_numpad):
             return True
         return False
-
-def parse(combination):
-    parsedCombinaton = set()
-
-    for key in combination.split("+"):
-        if(key == "Shift"):
-            parsedCombinaton.add(pynput.keyboard.Key.shift)
-        elif(key == "Alt"):
-            parsedCombinaton.add(pynput.keyboard.Key.alt)
-        elif(key == "Ctrl"):
-            parsedCombinaton.add(pynput.keyboard.Key.ctrl)
-        else:
-            parsedCombinaton.add(pynput.keyboard.KeyCode(char=key))
-    return HotKey(combination=parsedCombinaton)

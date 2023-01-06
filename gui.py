@@ -1,10 +1,9 @@
 import tkinter as tk
+from sys import platform
 from tkinter import ttk
 
-from sys import platform
-
 import macroManager
-from ToolPopup import ToolPopup
+from toolpopup import ToolPopup
 
 class ToolList(ttk.Treeview):
 	def __init__(self, master=None):
@@ -27,7 +26,7 @@ class ToolList(ttk.Treeview):
 		selected_item = self.selection()[0]
 		self.delete(selected_item)
 	
-	def deslectAll(self):
+	def deselectAll(self):
 		for item in self.selection():
 			self.selection_remove(item)
 
@@ -50,8 +49,6 @@ class App(tk.Tk):
 			self.grid_columnconfigure(0, weight=1)
 			
 			self.protocol("WM_DELETE_WINDOW", self.on_close)
-
-			# ------------------------------------[ Variables ]------------------------------------
 			
 			# ------------------------------------[ App Structure ]------------------------------------
 			self.menuBar = MenuBar(self)
@@ -64,7 +61,6 @@ class App(tk.Tk):
 
 			self.toolList = ToolList(self)
 			self.toolList.grid(row=0, column=0, sticky='news')
-
 
 			# ------------------------------------[ Event Handling ]------------------------------------
 			self.bind("<Button-1>", self.LeftClick)
@@ -118,7 +114,7 @@ class App(tk.Tk):
 		if(isinstance(event.widget, ToolList)):
 			selectedItem = self.toolList.identify("item", event.x, event.y)
 			if(selectedItem == ''):
-				self.toolList.deslectAll()
+				self.toolList.deselectAll()
 
 	def addTool(self, tool):
 		self._macroManager.addTool(tool)
