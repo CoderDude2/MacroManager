@@ -1,4 +1,5 @@
 import tkinter as tk
+
 from pynput import mouse
 
 from hotkeywidget import HotkeyWidget
@@ -17,7 +18,6 @@ class ToolPopup(tk.Toplevel):
         self.resizable(False, False)
 
         # ------------------------------------[ Variables ]------------------------------------
-
         self.toolName = tk.StringVar()
         self.xPosition = tk.IntVar()
         self.yPosition = tk.IntVar()
@@ -94,7 +94,6 @@ class ToolPopup(tk.Toplevel):
         # ------------------------------------[ Event Handling ]------------------------------------
         self.mouseController = mouse.Controller()
 
-        # self.bind("<Motion>", self.setPosition)
         self.bind("<space>", self.disableMouseTracking)
         self.bind("<Escape>", lambda event:(self.cancelMouseTracking(), self.hotkeyWidget.deActivate()))
     
@@ -125,14 +124,15 @@ class ToolPopup(tk.Toplevel):
         self.isTrackingMouse = False
     
     def getTool(self):
-        return Tool(self.toolName.get(), self.hotkeyWidget.getHotkey(), (self.xPosition.get(), self.yPosition.get()))
+        t = Tool(self.toolName.get(), self.hotkeyWidget.getHotkey(), (self.xPosition.get(), self.yPosition.get()))
+        return t
 
     def submitButton(self):
         self.withdraw()
         if(self.on_submit is not None):
             self.on_submit(self.getTool())
         self.destroy()
-    
+        
     def cancelButton(self):
         if(self.on_cancel is not None):
             self.on_cancel()

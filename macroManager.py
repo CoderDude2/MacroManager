@@ -1,12 +1,13 @@
 import json
-import threading
 import os
+import threading
+import time
+from copy import deepcopy
 
 from pynput import keyboard, mouse
 
 import hotkey
-from tool import Tool, deserialize
-
+from tool import deserialize
 
 class MacroManager:
     def __init__(self):
@@ -53,11 +54,8 @@ class MacroManager:
         self.tools.append(tool)
 
     def duplicateTool(self, index):
-        tool = self.tools[index]
-        toolName = f'{tool.toolName} copy'
-        hotKey = hotkey.HotKey(combination=tool.hotKey.combination)
-        position = tool.position
-        self.tools.append(Tool(toolName, hotKey ,position))
+        tool = deepcopy(self.tools[index])
+        self.tools.append(tool)
 
     def removeTool(self, index):
         self.tools.pop(index)
@@ -68,6 +66,7 @@ class MacroManager:
         originalPosition = mouse_controller.position
 
         mouse_controller.position = position
+        time.sleep(0.01)
         mouse_controller.click(mouse.Button.left)
         mouse_controller.position = originalPosition
 
@@ -85,7 +84,7 @@ class MacroManager:
 
     def loadFromJson(self):
         # Use the os module to determine if the tools.json file exists
-        if(os.exists("./tools.json")):
+        if(os.path.exists("./tools.json")):
             with open('tools.json', 'r') as file:
                 object = json.load(file)
             deserializedTools = [deserialize(entry) for entry in object]

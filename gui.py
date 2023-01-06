@@ -3,8 +3,7 @@ from sys import platform
 from tkinter import ttk
 
 import macroManager
-from ToolPopup import ToolPopup
-
+from toolpopup import ToolPopup
 
 class ToolList(ttk.Treeview):
 	def __init__(self, master=None):
@@ -50,8 +49,6 @@ class App(tk.Tk):
 			self.grid_columnconfigure(0, weight=1)
 			
 			self.protocol("WM_DELETE_WINDOW", self.on_close)
-
-			# ------------------------------------[ Variables ]------------------------------------
 			
 			# ------------------------------------[ App Structure ]------------------------------------
 			self.menuBar = MenuBar(self)
@@ -64,7 +61,6 @@ class App(tk.Tk):
 
 			self.toolList = ToolList(self)
 			self.toolList.grid(row=0, column=0, sticky='news')
-
 
 			# ------------------------------------[ Event Handling ]------------------------------------
 			self.bind("<Button-1>", self.LeftClick)

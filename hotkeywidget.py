@@ -1,6 +1,8 @@
 import tkinter as tk
 from sys import platform
+
 from pynput import keyboard
+
 import hotkey
 
 modifier_keys = {
@@ -21,7 +23,7 @@ class HotkeyWidget(tk.Frame):
         if(hotKey is not None):
             self.hotKey = hotKey
         else:
-            self.hotKey = hotkey.HotKey()
+            self.hotKey = hotkey.HotKey(combination=set())
         
         self.hotKeyLabel = tk.Label(self, text=self.hotKey.format(), width=15, background="grey")
         self.toggleButton = tk.Button(self, text="Set Hotkey", command=self.toggleHotkeyRecording)
@@ -59,7 +61,6 @@ class HotkeyWidget(tk.Frame):
         self.hotKeyLabel.config(text="")
         self.hotKey.combination.clear()
         
-
     def deActivate(self, event=None):
         self.isActive = False
         self.toggleButton.configure(text="Set Hotkey", state=tk.NORMAL)
