@@ -44,7 +44,7 @@ class HotkeyWidget(tk.Frame):
             
             self.hotKeyLabel.config(text=self.hotKey.format())
             
-            if(len(self.hotKey.combination) > 1):
+            if(len(self.hotKey.combination) >= 1):
                 self.toggleButton.configure(state=tk.NORMAL)
             if(len(self.hotKey.combination) == 3):
                 self.deActivate()
@@ -64,10 +64,6 @@ class HotkeyWidget(tk.Frame):
     def deActivate(self, event=None):
         self.isActive = False
         self.toggleButton.configure(text="Set Hotkey", state=tk.NORMAL)
-
-        if(len(self.hotKey.combination) <= 1):
-            self.hotKey.combination.clear()
-            self.hotKeyLabel.configure(text="")
 
     def toggleHotkeyRecording(self):
         if(not self.isActive):
