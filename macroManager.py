@@ -8,12 +8,16 @@ from pynput import keyboard, mouse
 
 import hotkey
 from tool import deserialize
+import notification
 
 class MacroManager:
-    def __init__(self):
+    def __init__(self, escape_sequence_callback=None):
         self.tools = self.loadFromJson()
         self.run = True
+
         self.isListening = True
+        self.is_listening_to_escape_sequence = True
+        self.escape_sequence_callback = escape_sequence_callback
 
         self.current = set()
         threading.Thread(target=self.listen).start()
@@ -29,10 +33,39 @@ class MacroManager:
             key = keyboard.Key.space
         else:
             key = keyboard.Listener().canonical(key)
+
         self.current.add(key)
+        if(self.current == set([keyboard.Key.shift, keyboard.KeyCode(vk=53)])):
+            if(self.is_listening_to_escape_sequence and self.escape_sequence_callback):
+                self.escape_sequence_callback()
+        
         if(self.isListening):
             self.checkHotkey()
         return self.run
+
+    def enable_listening(self, callback=None):
+        self.isListening = True
+
+        if(self.is_listening_to_escape_sequence):
+            notification.notify(title="Macro Manager", subtitle="Listening Enabled")
+
+    def disable_listening(self, callback=None):
+        self.isListening = False
+
+        if(self.is_listening_to_escape_sequence):
+            notification.notify(title="Macro Manager", subtitle="Listening Disabled")
+
+    def toggle_listening(self):
+        if(self.isListening):
+            self.disable_listening()
+        else:
+            self.enable_listening()
+
+    def disable_escape_sequence_listening(self):
+        self.is_listening_to_escape_sequence = False
+
+    def enable_escape_sequence_listening(self):
+        self.is_listening_to_escape_sequence = True
 
     def on_release(self, key):
         if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):

@@ -41,6 +41,7 @@ class MenuBar(tk.Menu):
 
 class App(tk.Tk):
 	def __init__(self):
+			
 			# ------------------------------------[ App Intialization ]------------------------------------
 			super().__init__()
 			self.title("Macro Manager")
@@ -71,22 +72,29 @@ class App(tk.Tk):
 			elif(platform == "darwin"):
 				self.bind("<Button-2>", self.RightClick)
 			
-			self.bind("<Delete>", self.removeTool)
-			self.bind("<BackSpace>", self.removeTool)
+			self.bind("<Delete>", self.removeSelectedTools)
+			self.bind("<BackSpace>", self.removeSelectedTools)
 
-			self._macroManager = macroManager.MacroManager()
+			self._macroManager = macroManager.MacroManager(escape_sequence_callback=self.toggleListening)
 			for tool in self._macroManager.tools:
 				self.toolList.add_tool(tool)
 
 	def toggleListening(self):
+		# If MacroManager is enabled, disable it
 		if(self._macroManager.isListening):
 			self.menuBar.file_menu.entryconfigure(1, label="Enable Listening")
 			self._macroManager.isListening = False
 			self.title("Macro Manager (Listening Disabled)")
+
+			self._macroManager.disable_listening()
+
+		# If MacroManager is disabled, enable it
 		else:
 			self.menuBar.file_menu.entryconfigure(1, label="Disable Listening")
 			self._macroManager.isListening = True
 			self.title("Macro Manager")
+
+			self._macroManager.enable_listening()
 
 	def submitButton(self):
 		self.popupWindow.destroy()
@@ -94,12 +102,11 @@ class App(tk.Tk):
 
 	def RightClick(self, event):
 		selectedItem = self.toolList.identify("item", event.x, event.y)
-# 
 		rightClickMenu = tk.Menu(self, tearoff=False)
 		rightClickMenu.add_command(label="Edit", command=self.editToolPopup)
 		rightClickMenu.add_command(label="Duplicate", command=self.duplicateTool)
 		rightClickMenu.add_separator()
-		rightClickMenu.add_command(label="Delete", command=self.removeTool)
+		rightClickMenu.add_command(label="Delete", command=self.removeSelectedTools)
 
 		rightClickMenu2 = tk.Menu(self, tearoff=False)
 		rightClickMenu2.add_command(label="New Tool", command=self.newToolPopup)
@@ -122,6 +129,7 @@ class App(tk.Tk):
 		self.toolList.add_tool(tool)
 
 		self._macroManager.isListening = True
+		self._macroManager.is_listening_to_escape_sequence = True
 
 	def editTool(self, tool):
 		selectedItem = self.toolList.selection()[0]
@@ -131,8 +139,9 @@ class App(tk.Tk):
 		self.toolList.edit_tool(tool)
 		
 		self._macroManager.isListening = True
+		self._macroManager.is_listening_to_escape_sequence = True
 
-	def removeTool(self, event=None):
+	def removeSelectedTools(self, event=None):
 		for selectedItem in self.toolList.selection():
 			selectedIndex = self.toolList.index(selectedItem)
 
@@ -148,14 +157,19 @@ class App(tk.Tk):
 
 	def on_cancel(self):
 		self._macroManager.isListening = True
+		self._macroManager.is_listening_to_escape_sequence = True
 
 	def editToolPopup(self):
 		self._macroManager.isListening = False
+		self._macroManager.is_listening_to_escape_sequence = False
+
 		tool = self.getSelectedTool()
 		ToolPopup(self, title="Edit Tool", submitButtonText="Save", on_submit=self.editTool, on_cancel=self.on_cancel, tool=tool)
 
 	def newToolPopup(self):
 		self._macroManager.isListening = False
+		self._macroManager.is_listening_to_escape_sequence = False
+
 		ToolPopup(self, title="New Tool", on_submit=self.addTool, on_cancel=self.on_cancel)
 
 	def getSelectedTool(self):
