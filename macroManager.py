@@ -50,7 +50,7 @@ class MacroManager:
         # [self.activate(tool.position) for tool in self.tools if tool.hotKey.compare(self.current)]
         for tool in self.tools:
             if(tool.hotKey.compare(self.current)):
-                self.activate(tool.position)
+                self.activate(tool.position, tool.double_click)
 
     def addTool(self, tool):
         self.tools.append(tool)
@@ -62,21 +62,24 @@ class MacroManager:
     def removeTool(self, index):
         self.tools.pop(index)
 
-    def activate(self, position):
+    def activate(self, position, double_click=False):
         mouse_controller = mouse.Controller()
 
         originalPosition = mouse_controller.position
 
         mouse_controller.position = position
         time.sleep(0.01)
-        mouse_controller.click(mouse.Button.left)
+        if(double_click):
+            mouse_controller.click(mouse.Button.left)
+            mouse_controller.click(mouse.Button.left)
+        else:
+            mouse_controller.click(mouse.Button.left)
         mouse_controller.position = originalPosition
 
     def stop(self):
         self.saveToJson()
         self.run = False
-        keyboard.Controller().press(keyboard.Key.shift)
-        keyboard.Controller().release(keyboard.Key.shift)
+        keyboard.Controller().tap(keyboard.Key.shift)
     
     def saveToJson(self):
         serializedTools = [tool.serialize() for tool in self.tools]

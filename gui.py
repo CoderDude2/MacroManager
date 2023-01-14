@@ -9,18 +9,19 @@ class ToolList(ttk.Treeview):
 	def __init__(self, master=None):
 		super().__init__(master)
 
-		self.config(columns=('tool_name', 'hotkey', 'position'), show='headings')
+		self.config(columns=('tool_name', 'hotkey', 'position', 'double_click'), show='headings')
 
 		self.heading('tool_name', text='Tool Name')
 		self.heading('hotkey',text='Hotkey')
 		self.heading('position', text='Position')
+		self.heading('double_click', text='Double Click')
 	
 	def add_tool(self, tool):
-		self.insert(parent='',index=tk.END, values=(tool.toolName, tool.hotKey.format(), tool.position) )
+		self.insert(parent='',index=tk.END, values=(tool.toolName, tool.hotKey.format(), tool.position, "Yes" if tool.double_click else "No") )
 	
 	def edit_tool(self, tool):
 		selected_item = self.selection()[0]
-		self.item(selected_item, values=(tool.toolName, tool.hotKey.format(), tool.position))
+		self.item(selected_item, values=(tool.toolName, tool.hotKey.format(), tool.position, "Yes" if tool.double_click else "No"))
 
 	def delete_tool(self, event=None):
 		selected_item = self.selection()[0]
@@ -43,7 +44,7 @@ class App(tk.Tk):
 			# ------------------------------------[ App Intialization ]------------------------------------
 			super().__init__()
 			self.title("Macro Manager")
-			self.geometry("600x500")
+			self.geometry("800x500")
 
 			self.grid_rowconfigure(0, weight=1)
 			self.grid_columnconfigure(0, weight=1)

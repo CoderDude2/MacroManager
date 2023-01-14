@@ -21,12 +21,14 @@ class ToolPopup(tk.Toplevel):
         self.toolName = tk.StringVar()
         self.xPosition = tk.IntVar()
         self.yPosition = tk.IntVar()
+        self.doubleClick = tk.BooleanVar()
 
         if(tool is not None):
             self.toolName.set(tool.toolName)
             self.xPosition.set(tool.position[0])
             self.yPosition.set(tool.position[1])
             self.hotKey = tool.hotKey
+            self.doubleClick.set(tool.double_click)
 
         self.isTrackingMouse = False
 
@@ -65,6 +67,9 @@ class ToolPopup(tk.Toplevel):
 
         self.setPositionButton = tk.Button(self, text="Set", command=self.enableMouseTracking)
 
+        self.toggleDoubleClickLabel = tk.Label(self, text="Double Click")
+        self.toggleDoubleClickCheckBox = tk.Checkbutton(self, variable=self.doubleClick)
+
         buttonContainer = tk.Frame(self)
         cancelButton = tk.Button(buttonContainer, text="Cancel", command=self.cancelButton)
         if(submitButtonText is not None):
@@ -87,9 +92,12 @@ class ToolPopup(tk.Toplevel):
         yEntry.grid(row=2, column=4, sticky='w')
         self.setPositionButton.grid(row=2, column=5, sticky='w')
         # ROW 3
+        self.toggleDoubleClickLabel.grid(row=3, column=0)
+        self.toggleDoubleClickCheckBox.grid(row=3, column=1)
+        # ROW 4
         cancelButton.pack(side='left', fill='x', expand=True)
         submitButton.pack(side='right', fill='x', expand=True)
-        buttonContainer.grid(row=3, column=0,columnspan=6,sticky='ew')
+        buttonContainer.grid(row=4, column=0,columnspan=6,sticky='ew')
 
         # ------------------------------------[ Event Handling ]------------------------------------
         self.mouseController = mouse.Controller()
@@ -123,7 +131,7 @@ class ToolPopup(tk.Toplevel):
         self.isTrackingMouse = False
     
     def getTool(self):
-        t = Tool(self.toolName.get(), self.hotkeyWidget.getHotkey(), (self.xPosition.get(), self.yPosition.get()))
+        t = Tool(self.toolName.get(), self.hotkeyWidget.getHotkey(), (self.xPosition.get(), self.yPosition.get()), self.doubleClick.get())
         return t
 
     def submitButton(self):
