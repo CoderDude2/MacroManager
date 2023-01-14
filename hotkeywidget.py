@@ -35,7 +35,6 @@ class HotkeyWidget(tk.Frame):
         self.master.bind("<space>", self.record)
 
     def record(self, event):
-        print(event)
         if(self.isActive):
             if(platform == "win32"):
                 key = self.convertToKeyWin32(event.keysym, event.keycode)

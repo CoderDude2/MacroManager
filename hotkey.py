@@ -65,7 +65,6 @@ class HotKey:
 def deserialize(hotkey):
     deserializedCombination = set()
     for key in hotkey:
-        print(key)
         if(isinstance(key, str)):
             if(key == "space"):
                 deserializedCombination.add(pynput.keyboard.Key.space)
