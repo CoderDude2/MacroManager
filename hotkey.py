@@ -2,10 +2,10 @@ from sys import platform
 
 import pynput
 
-allowed_keys = ["shift", "alt", "ctrl"]
+allowed_keys = ["shift", "alt", "ctrl", "space"]
 
 win32_numpad = list(range(96, 106))
-# For some reason the Apple numpad is sequential up to 7, than it skips a vk and continues
+# For some reason the Apple numpad is sequential up to 7, then it skips a vk and continues
 darwin_numpad = list(range(82, 90)) + [91,92]
 
 class HotKey:
@@ -15,10 +15,12 @@ class HotKey:
     def serialize(self):
         serializedCombination = []
         for key in self.combination:
-            if(isinstance(key, pynput.keyboard.Key)):
-                # Convert the key to its associated vk
-                key = int(str(key.value)[1:-1])
-                serializedCombination.append(key)
+            if(key == pynput.keyboard.Key.space):
+                serializedCombination.append(key.name)
+            elif(isinstance(key, pynput.keyboard.Key)):
+                    # Convert the key to its associated vk
+                    key = int(str(key.value)[1:-1])
+                    serializedCombination.append(key)
             elif(isNumpad(key.vk)):
                 serializedCombination.append(key.vk)
             else:
@@ -63,8 +65,12 @@ class HotKey:
 def deserialize(hotkey):
     deserializedCombination = set()
     for key in hotkey:
+        print(key)
         if(isinstance(key, str)):
-            deserializedCombination.add(pynput.keyboard.KeyCode(char=key))
+            if(key == "space"):
+                deserializedCombination.add(pynput.keyboard.Key.space)
+            else:
+                deserializedCombination.add(pynput.keyboard.KeyCode(char=key))
         elif(key in win32_numpad or key in darwin_numpad):
             deserializedCombination.add(pynput.keyboard.KeyCode.from_vk(key))
         else:

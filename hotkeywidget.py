@@ -32,8 +32,10 @@ class HotkeyWidget(tk.Frame):
         self.toggleButton.pack(side=tk.LEFT)
 
         self.master.bind("<KeyPress>", self.record)
+        self.master.bind("<space>", self.record)
 
     def record(self, event):
+        print(event)
         if(self.isActive):
             if(platform == "win32"):
                 key = self.convertToKeyWin32(event.keysym, event.keycode)
@@ -102,6 +104,9 @@ class HotkeyWidget(tk.Frame):
         elif(keysym.isalnum() and len(keysym) == 1):
             key =  keyboard.Listener().canonical(keyboard.KeyCode().from_char(char=keysym))
             return key
+        elif(keysym == "space"):
+            key = keyboard.Key.space;
+            return key
 
     def convertToKeyDarwin(self, keysym):
         if(self.isNumpad(keysym)):
@@ -113,4 +118,7 @@ class HotkeyWidget(tk.Frame):
             return key
         elif(keysym.isalnum() and len(keysym) == 1):
             key =  keyboard.Listener().canonical(keyboard.KeyCode().from_char(char=keysym))
+            return key
+        elif(keysym == "space"):
+            key = keyboard.Key.space;
             return key

@@ -93,8 +93,6 @@ class ToolPopup(tk.Toplevel):
 
         # ------------------------------------[ Event Handling ]------------------------------------
         self.mouseController = mouse.Controller()
-
-        self.bind("<space>", self.disableMouseTracking)
         self.bind("<Escape>", lambda event:(self.cancelMouseTracking(), self.hotkeyWidget.deActivate()))
     
     def setPosition(self, event=None):
@@ -110,6 +108,7 @@ class ToolPopup(tk.Toplevel):
             self.yPosition.set( round(mousePosition[1]) )
 
     def enableMouseTracking(self, event=None):
+        self.bind("<space>", self.disableMouseTracking)
         self.hotkeyWidget.deActivate()
         self.setPositionButton.configure(state=tk.DISABLED)
         self.isTrackingMouse = True

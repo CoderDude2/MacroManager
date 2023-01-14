@@ -25,6 +25,8 @@ class MacroManager:
     def on_press(self, key):
         if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
             key = keyboard.KeyCode.from_vk(key.vk)
+        elif(hasattr(key, 'name') and key.name == "space"):
+            key = keyboard.Key.space
         else:
             key = keyboard.Listener().canonical(key)
         self.current.add(key)
