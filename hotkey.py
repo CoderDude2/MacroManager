@@ -2,7 +2,7 @@ from sys import platform
 
 import pynput
 
-allowed_keys = ["shift", "alt", "ctrl", "space"]
+allowed_keys = ["shift", "alt", "ctrl", "space", "tab", "cmd", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12"]
 
 win32_numpad = list(range(96, 106))
 # For some reason the Apple numpad is sequential up to 7, then it skips a vk and continues
@@ -32,7 +32,10 @@ class HotKey:
 
         for key in self.combination:
             if(hasattr(key, "name") and key.name in allowed_keys):
-                formattedHotkey.insert(0, key.name.title())
+                if(key.name == "cmd" and platform == "win32"):
+                    formattedHotkey.append("Win")
+                else:
+                    formattedHotkey.insert(0, key.name.title())
             elif(hasattr(key, 'vk') and isNumpad(key.vk) and platform == "win32"):
                 formattedHotkey.append(f'Num{key.vk-96}')
             elif(hasattr(key, 'vk') and isNumpad(key.vk) and platform == "darwin"):
