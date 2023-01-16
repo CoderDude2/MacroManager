@@ -12,7 +12,21 @@ modifier_keys = {
     "Control_R": keyboard.Key.ctrl,
     "Alt_L": keyboard.Key.alt,
     "Alt_R": keyboard.Key.alt,
-    "F1": keyboard.Key.f1
+    "Win_L": keyboard.Key.cmd,
+    "Win_R": keyboard.Key.cmd,
+    "Tab":keyboard.Key.tab,
+    "F1": keyboard.Key.f1,
+    "F2": keyboard.Key.f2,
+    "F3": keyboard.Key.f3,
+    "F4": keyboard.Key.f4,
+    "F5": keyboard.Key.f5,
+    "F6": keyboard.Key.f6,
+    "F7": keyboard.Key.f7,
+    "F8": keyboard.Key.f8,
+    "F9": keyboard.Key.f9,
+    "F10": keyboard.Key.f10,
+    "F11": keyboard.Key.f11,
+    "F12": keyboard.Key.f12,
 }
 
 class HotkeyWidget(tk.Frame):
