@@ -3,6 +3,7 @@ import os
 import threading
 import time
 from copy import deepcopy
+from sys import platform
 
 from pynput import keyboard, mouse
 
@@ -35,7 +36,11 @@ class MacroManager:
             key = keyboard.Listener().canonical(key)
 
         self.current.add(key)
-        if(self.current == set([keyboard.Key.shift, keyboard.KeyCode(vk=53)])):
+
+        if(platform == "win32" and self.current == set([keyboard.Key.shift, keyboard.KeyCode(vk=27)])):
+            if(self.is_listening_to_escape_sequence and self.escape_sequence_callback):
+                self.escape_sequence_callback()
+        elif(platform == "darwin" and self.current == set([keyboard.Key.shift, keyboard.KeyCode(vk=53)])):
             if(self.is_listening_to_escape_sequence and self.escape_sequence_callback):
                 self.escape_sequence_callback()
         

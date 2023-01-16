@@ -18,7 +18,7 @@ if(sys.platform == "darwin"):
         notification.setDeliveryDate_(Foundation.NSDate.dateWithTimeInterval_sinceDate_(delay, Foundation.NSDate.date()))
         NSUserNotificationCenter.defaultUserNotificationCenter().scheduleNotification_(notification)
 elif(sys.platform == "win32"):
-    from win10toast import ToastNotifier
+    from plyer import notification
 
     def notify(title="", subtitle=""):
-        ToastNoifier().show_toast(title, subtitle, duration=5)
+        notification.notify(title=title, message=subtitle, timeout=0)
