@@ -11,7 +11,8 @@ modifier_keys = {
     "Control_L": keyboard.Key.ctrl,
     "Control_R": keyboard.Key.ctrl,
     "Alt_L": keyboard.Key.alt,
-    "Alt_R": keyboard.Key.alt
+    "Alt_R": keyboard.Key.alt,
+    "F1": keyboard.Key.f1
 }
 
 class HotkeyWidget(tk.Frame):
