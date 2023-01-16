@@ -5,6 +5,7 @@ import pynput
 allowed_keys = ["shift", "alt", "ctrl", "space", "tab", "cmd", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12"]
 
 win32_numpad = list(range(96, 106))
+win32_function_keys = list(range(112,123))
 # For some reason the Apple numpad is sequential up to 7, then it skips a vk and continues
 darwin_numpad = list(range(82, 90)) + [91,92]
 
@@ -43,6 +44,8 @@ class HotKey:
                     formattedHotkey.append(f'Num{key.vk-82}')
                 else:
                     formattedHotkey.append(f'Num{key.vk-83}')
+            elif(hasattr(key, 'vk') and isFunctionKey(key.vk)):
+                formattedHotkey.append(f'F{key.vk-111}')
             elif(hasattr(key, 'char')):
                 formattedHotkey.append(key.char)
         
@@ -86,3 +89,7 @@ def isNumpad(vk):
         elif(platform == "darwin" and vk in darwin_numpad):
             return True
         return False
+
+def isFunctionKey(vk):
+    if(platform == "win32" and vk in win32_function_keys):
+        return True
