@@ -23,7 +23,7 @@ class MacroManager:
             listener.join()
 
     def on_press(self, key):
-        if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
+        if(hasattr(key, 'vk') and (hotkey.isNumpad(key.vk) or hotkey.isFunctionKey(key.vk))):
             key = keyboard.KeyCode.from_vk(key.vk)
         elif(hasattr(key, 'name') and key.name == "space"):
             key = keyboard.Key.space

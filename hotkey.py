@@ -2,7 +2,7 @@ from sys import platform
 
 import pynput
 
-allowed_keys = ["shift", "alt", "ctrl", "space", "tab", "cmd", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12"]
+allowed_keys = ["shift", "alt", "ctrl", "space", "tab", "cmd"]
 
 win32_numpad = list(range(96, 106))
 win32_function_keys = list(range(112,123))
@@ -77,6 +77,8 @@ def deserialize(hotkey):
             else:
                 deserializedCombination.add(pynput.keyboard.KeyCode(char=key))
         elif(key in win32_numpad or key in darwin_numpad):
+            deserializedCombination.add(pynput.keyboard.KeyCode.from_vk(key))
+        elif(key in win32_function_keys):
             deserializedCombination.add(pynput.keyboard.KeyCode.from_vk(key))
         else:
             deserializedCombination.add(pynput.keyboard.Key( pynput.keyboard.KeyCode.from_vk(key)) )
