@@ -17,10 +17,17 @@ class MacroManager:
 
         self.current = set()
         threading.Thread(target=self.listen).start()
+        threading.Thread(target=self.mouse_listen).start()
     
     def listen(self):
         with keyboard.Listener(on_press=self.on_press, on_release=self.on_release) as listener:
             listener.join()
+    def mouse_listen(self):
+        with mouse.Listener(on_click=self.on_click) as mouse_listener:
+            mouse_listener.join()
+
+    def on_click(self, *args):
+        print(args)
 
     def on_press(self, key):
         if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
