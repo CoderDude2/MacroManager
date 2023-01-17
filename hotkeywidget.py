@@ -14,19 +14,7 @@ modifier_keys = {
     "Alt_R": keyboard.Key.alt,
     "Win_L": keyboard.Key.cmd,
     "Win_R": keyboard.Key.cmd,
-    "Tab":keyboard.Key.tab,
-    "F1": keyboard.Key.f1,
-    "F2": keyboard.Key.f2,
-    "F3": keyboard.Key.f3,
-    "F4": keyboard.Key.f4,
-    "F5": keyboard.Key.f5,
-    "F6": keyboard.Key.f6,
-    "F7": keyboard.Key.f7,
-    "F8": keyboard.Key.f8,
-    "F9": keyboard.Key.f9,
-    "F10": keyboard.Key.f10,
-    "F11": keyboard.Key.f11,
-    "F12": keyboard.Key.f12,
+    "Tab": keyboard.Key.tab
 }
 
 class HotkeyWidget(tk.Frame):
@@ -93,6 +81,12 @@ class HotkeyWidget(tk.Frame):
                 return True
         return False
 
+    def isFunctionKey(self, keycode):
+        if(platform == "win32"):
+            return True if keycode in hotkey.win32_function_keys else False
+        elif(platform == "darwin"):
+            return False
+
     def isNumpadKeyCode(self, keycode):
         if(platform == "win32"):
             return True if keycode in hotkey.win32_numpad else False
@@ -112,6 +106,9 @@ class HotkeyWidget(tk.Frame):
         if(self.isNumpadKeyCode(keycode)):
             key = keyboard.KeyCode().from_vk(keycode)
             return key
+        elif(self.isFunctionKey(keycode)):
+            key = keyboard.KeyCode().from_vk(keycode)
+            return key
         elif(self.isModifier(keysym)):
             key = modifier_keys[keysym]
             return key
@@ -119,7 +116,7 @@ class HotkeyWidget(tk.Frame):
             key =  keyboard.Listener().canonical(keyboard.KeyCode().from_char(char=keysym))
             return key
         elif(keysym == "space"):
-            key = keyboard.Key.space;
+            key = keyboard.Key.space
             return key
 
     def convertToKeyDarwin(self, keysym):
@@ -134,5 +131,5 @@ class HotkeyWidget(tk.Frame):
             key =  keyboard.Listener().canonical(keyboard.KeyCode().from_char(char=keysym))
             return key
         elif(keysym == "space"):
-            key = keyboard.Key.space;
+            key = keyboard.Key.space
             return key
