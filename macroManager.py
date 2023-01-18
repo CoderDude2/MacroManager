@@ -28,6 +28,7 @@ class MacroManager:
             listener.join()
 
     def on_press(self, key):
+        print(self.current)
         if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
             key = keyboard.KeyCode.from_vk(key.vk)
         elif(hasattr(key, 'name') and key.name == "space"):
@@ -47,6 +48,20 @@ class MacroManager:
         if(self.isListening):
             self.checkHotkey()
         return self.run
+
+    def on_release(self, key):
+        if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
+            key = keyboard.KeyCode.from_vk(key.vk)
+        else:
+            key = keyboard.Listener().canonical(key)
+        
+        if(key in self.current):
+            self.current.remove(key)
+        
+        if(len(self.current) == 1 and platform == "darwin"):
+            self.current.clear()
+        elif(len(self.current) == 1 and keyboard.Key.space in self.current):
+            self.current.clear()
 
     def enable_listening(self, callback=None):
         self.isListening = True
@@ -71,18 +86,6 @@ class MacroManager:
 
     def enable_escape_sequence_listening(self):
         self.is_listening_to_escape_sequence = True
-
-    def on_release(self, key):
-        if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
-            key = keyboard.KeyCode.from_vk(key.vk)
-        else:
-            key = keyboard.Listener().canonical(key)
-        
-        if(key in self.current):
-            self.current.remove(key)
-        
-        if(len(self.current) == 1):
-            self.current.clear()
 
     def checkHotkey(self):
         # [self.activate(tool.position) for tool in self.tools if tool.hotKey.compare(self.current)]
