@@ -17,11 +17,11 @@ class ToolList(ttk.Treeview):
 		self.heading('double_click', text='Double Click')
 	
 	def add_tool(self, tool):
-		self.insert(parent='',index=tk.END, values=(tool.toolName, tool.hotKey.format(), tool.position, "Yes" if tool.double_click else "No") )
+		self.insert(parent='',index=tk.END, values=(tool.toolName, tool.hotKey.format(), tool.position, "Yes" if tool.double_click else "") )
 	
 	def edit_tool(self, tool):
 		selected_item = self.selection()[0]
-		self.item(selected_item, values=(tool.toolName, tool.hotKey.format(), tool.position, "Yes" if tool.double_click else "No"))
+		self.item(selected_item, values=(tool.toolName, tool.hotKey.format(), tool.position, "Yes" if tool.double_click else ""))
 
 	def delete_tool(self, event=None):
 		selected_item = self.selection()[0]

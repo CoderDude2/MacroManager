@@ -14,6 +14,8 @@ modifier_keys = {
     "Alt_R": keyboard.Key.alt,
     "Win_L": keyboard.Key.cmd,
     "Win_R": keyboard.Key.cmd,
+    "Meta_L": keyboard.Key.cmd,
+    "Meta_R": keyboard.Key.cmd,
     "Tab": keyboard.Key.tab
 }
 

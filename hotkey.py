@@ -19,9 +19,7 @@ class HotKey:
             if(key == pynput.keyboard.Key.space):
                 serializedCombination.append(key.name)
             elif(isinstance(key, pynput.keyboard.Key)):
-                    # Convert the key to its associated vk
-                    key = int(str(key.value)[1:-1])
-                    serializedCombination.append(key)
+                    serializedCombination.append(key.value.vk)
             elif(isNumpad(key.vk)):
                 serializedCombination.append(key.vk)
             else:
@@ -30,7 +28,6 @@ class HotKey:
     
     def format(self):
         formattedHotkey = []
-
         for key in self.combination:
             if(hasattr(key, "name") and key.name in allowed_keys):
                 if(key.name == "cmd" and platform == "win32"):
@@ -58,9 +55,7 @@ class HotKey:
         return '+'.join(formattedHotkey)
     
     def compare(self, keyCombination):
-        if(self.combination == keyCombination):
-            return True
-        return False
+        return self.combination == keyCombination
 
     def __str__(self):
         return f'HotKey({self.combination})'

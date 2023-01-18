@@ -30,13 +30,16 @@ class MacroManager:
     def on_press(self, key):
         if(hasattr(key, 'vk') and (hotkey.isNumpad(key.vk) or hotkey.isFunctionKey(key.vk))):
             key = keyboard.KeyCode.from_vk(key.vk)
-        elif(hasattr(key, 'name') and key.name == "space"):
-            key = keyboard.Key.space
+        elif(hasattr(key, 'name')):
+            if(key.name == "space"):
+                key = keyboard.Key.space
+            elif(key.name == 'tab'):
+                key = keyboard.Key.tab
         else:
             key = keyboard.Listener().canonical(key)
 
         self.current.add(key)
-
+        
         if(platform == "win32" and self.current == set([keyboard.Key.shift, keyboard.KeyCode(vk=27)])):
             if(self.is_listening_to_escape_sequence and self.escape_sequence_callback):
                 self.escape_sequence_callback()
@@ -51,6 +54,9 @@ class MacroManager:
     def on_release(self, key):
         if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
             key = keyboard.KeyCode.from_vk(key.vk)
+        if(hasattr(key, 'name')):
+            if(key.name == 'space'):
+                key = keyboard.Key.space
         else:
             key = keyboard.Listener().canonical(key)
         
@@ -59,8 +65,6 @@ class MacroManager:
         
         if(len(self.current) == 1 and platform == "darwin"):
             self.current.clear()
-        elif(len(self.current) == 1 and keyboard.Key.space in self.current):
-            self.current.clear()
 
     def enable_listening(self, callback=None):
         self.isListening = True
@@ -68,11 +72,17 @@ class MacroManager:
         if(self.is_listening_to_escape_sequence):
             notification.notify(title="Macro Manager", subtitle="Listening Enabled")
 
+        if(callback):
+            callback()
+
     def disable_listening(self, callback=None):
         self.isListening = False
 
         if(self.is_listening_to_escape_sequence):
             notification.notify(title="Macro Manager", subtitle="Listening Disabled")
+        
+        if(callback):
+            callback()
 
     def toggle_listening(self):
         if(self.isListening):
@@ -87,7 +97,6 @@ class MacroManager:
         self.is_listening_to_escape_sequence = True
 
     def checkHotkey(self):
-        # [self.activate(tool.position) for tool in self.tools if tool.hotKey.compare(self.current)]
         for tool in self.tools:
             if(tool.hotKey.compare(self.current)):
                 self.activate(tool.position, tool.double_click)
