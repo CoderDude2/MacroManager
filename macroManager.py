@@ -39,11 +39,9 @@ class MacroManager:
             key = keyboard.Listener().canonical(key)
 
         self.current.add(key)
+        print(self.current)
         
-        if(platform == "win32" and self.current == set([keyboard.Key.shift, keyboard.KeyCode(vk=27)])):
-            if(self.is_listening_to_escape_sequence and self.escape_sequence_callback):
-                self.escape_sequence_callback()
-        elif(platform == "darwin" and self.current == set([keyboard.Key.shift, keyboard.KeyCode(vk=53)])):
+        if(self.current == set([keyboard.Key.shift, keyboard.Key.esc])):
             if(self.is_listening_to_escape_sequence and self.escape_sequence_callback):
                 self.escape_sequence_callback()
         
@@ -72,17 +70,11 @@ class MacroManager:
         if(self.is_listening_to_escape_sequence):
             notification.notify(title="Macro Manager", subtitle="Listening Enabled")
 
-        if(callback):
-            callback()
-
     def disable_listening(self, callback=None):
         self.isListening = False
 
         if(self.is_listening_to_escape_sequence):
             notification.notify(title="Macro Manager", subtitle="Listening Disabled")
-        
-        if(callback):
-            callback()
 
     def toggle_listening(self):
         if(self.isListening):
