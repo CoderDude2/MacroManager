@@ -35,8 +35,11 @@ class MacroManager:
                 key = keyboard.Key.space
             elif(key.name == 'tab'):
                 key = keyboard.Key.tab
-        else:
-            key = keyboard.Listener().canonical(key)
+            elif(key.name == 'esc'):
+                key = keyboard.Key.esc
+            else:
+                print(key)
+                key = keyboard.Listener().canonical(key)
 
         self.current.add(key)
         print(self.current)
@@ -55,6 +58,12 @@ class MacroManager:
         if(hasattr(key, 'name')):
             if(key.name == 'space'):
                 key = keyboard.Key.space
+            elif(key.name == 'tab'):
+                key = keyboard.Key.tab
+            elif(key.name == 'esc'):
+                key = keyboard.Key.esc
+            else:
+                key = keyboard.Listener().canonical(key)
         else:
             key = keyboard.Listener().canonical(key)
         
