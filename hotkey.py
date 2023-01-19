@@ -17,14 +17,15 @@ class HotKey:
         serializedCombination = []
 
         for key in self.combination:
+            print(self.combination)
             if(key == pynput.keyboard.Key.space):
                 serializedCombination.append(key.name)
             elif(hasattr(key, 'value')):
                 serializedCombination.append(key.value.vk)
-            elif(hasattr(key, 'vk')):
+            elif(hasattr(key, 'vk') and key.vk != None):
                 if(isNumpad(key.vk)):
                     serializedCombination.append(key.vk)
-            elif(hasattr(key, 'char') and key.char != '' and key.char != None):
+            elif(hasattr(key, 'char') and key.char != None):
                 serializedCombination.append(str(key.char))
         
         return serializedCombination
