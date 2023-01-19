@@ -15,15 +15,18 @@ class HotKey:
 
     def serialize(self):
         serializedCombination = []
+
         for key in self.combination:
             if(key == pynput.keyboard.Key.space):
                 serializedCombination.append(key.name)
-            elif(isinstance(key, pynput.keyboard.Key)):
-                    serializedCombination.append(key.value.vk)
-            elif(isNumpad(key.vk)):
-                serializedCombination.append(key.vk)
-            else:
-               serializedCombination.append(str(key.char))
+            elif(hasattr(key, 'value')):
+                serializedCombination.append(key.value.vk)
+            elif(hasattr(key, 'vk')):
+                if(isNumpad(key.vk)):
+                    serializedCombination.append(key.vk)
+            elif(hasattr(key, 'char') and key.char != '' and key.char != None):
+                serializedCombination.append(str(key.char))
+        
         return serializedCombination
     
     def format(self):
