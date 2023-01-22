@@ -1,5 +1,6 @@
 tools.json
 .DS_Store
+tester.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

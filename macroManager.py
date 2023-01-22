@@ -6,6 +6,7 @@ from copy import deepcopy
 from sys import platform
 
 from pynput import keyboard, mouse
+from pynput.keyboard import _NORMAL_MODIFIERS
 
 import hotkey
 from tool import deserialize
@@ -15,6 +16,7 @@ class MacroManager:
     def __init__(self, escape_sequence_callback=None):
         self.tools = self.loadFromJson()
         self.run = True
+        self.action_ran = False
 
         self.isListening = True
         self.is_listening_to_escape_sequence = True
@@ -28,22 +30,19 @@ class MacroManager:
             listener.join()
 
     def on_press(self, key):
-        if(hasattr(key, 'vk') and (hotkey.isNumpad(key.vk) or hotkey.isFunctionKey(key.vk))):
-            key = keyboard.KeyCode.from_vk(key.vk)
-        elif(hasattr(key, 'name')):
-            if(key.name == "space"):
-                key = keyboard.Key.space
-            elif(key.name == 'tab'):
-                key = keyboard.Key.tab
-            elif(key.name == 'esc'):
-                key = keyboard.Key.esc
-            else:
-                print(key)
+        if(hasattr(key, 'name')):
+            if(key.value in _NORMAL_MODIFIERS.keys()):
                 key = keyboard.Listener().canonical(key)
+                self.current.add(key)
+            else:
+                self.current.add(key)
+        elif(hasattr(key, 'vk') and (hotkey.isNumpad(key.vk))):
+            key = keyboard.KeyCode.from_vk(key.vk)
+            self.current.add(key)
+        else:
+            key = keyboard.Listener().canonical(key)
+            self.current.add(key)
 
-        self.current.add(key)
-        print(self.current)
-        
         if(self.current == set([keyboard.Key.shift, keyboard.Key.esc])):
             if(self.is_listening_to_escape_sequence and self.escape_sequence_callback):
                 self.escape_sequence_callback()
@@ -53,17 +52,11 @@ class MacroManager:
         return self.run
 
     def on_release(self, key):
-        if(hasattr(key, 'vk') and hotkey.isNumpad(key.vk)):
-            key = keyboard.KeyCode.from_vk(key.vk)
         if(hasattr(key, 'name')):
-            if(key.name == 'space'):
-                key = keyboard.Key.space
-            elif(key.name == 'tab'):
-                key = keyboard.Key.tab
-            elif(key.name == 'esc'):
-                key = keyboard.Key.esc
-            else:
+            if(key.value in _NORMAL_MODIFIERS.keys()):
                 key = keyboard.Listener().canonical(key)
+        elif(hasattr(key, 'vk') and (hotkey.isNumpad(key.vk))):
+            key = keyboard.KeyCode.from_vk(key.vk)
         else:
             key = keyboard.Listener().canonical(key)
         
@@ -72,6 +65,9 @@ class MacroManager:
         
         if(len(self.current) == 1 and platform == "darwin"):
             self.current.clear()
+        
+        if(self.action_ran):
+            self.action_ran = False
 
     def enable_listening(self, callback=None):
         self.isListening = True
@@ -126,6 +122,8 @@ class MacroManager:
             mouse_controller.click(mouse.Button.left)
         mouse_controller.position = originalPosition
 
+        self.action_ran = True
+
     def stop(self):
         self.saveToJson()
         self.run = False
@@ -138,7 +136,6 @@ class MacroManager:
             file.write(json_object)
 
     def loadFromJson(self):
-        # Use the os module to determine if the tools.json file exists
         if(os.path.exists("./tools.json")):
             with open('tools.json', 'r') as file:
                 object = json.load(file)

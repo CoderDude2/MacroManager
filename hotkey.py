@@ -2,12 +2,11 @@ from sys import platform
 
 import pynput
 
-allowed_keys = ["shift", "alt", "ctrl", "space", "tab", "cmd"]
-
 win32_numpad = list(range(96, 106))
 win32_function_keys = list(range(112,123))
+
 # For some reason the Apple numpad is sequential up to 7, then it skips a vk and continues
-darwin_numpad = list(range(82, 90)) + [91,92]
+darwin_keypad = list(range(82, 90)) + [91,92]
 
 class HotKey:
     def __init__(self, combination=set()):
@@ -17,23 +16,29 @@ class HotKey:
         serializedCombination = []
 
         for key in self.combination:
-            print(self.combination)
             if(key == pynput.keyboard.Key.space):
-                serializedCombination.append(key.name)
-            elif(hasattr(key, 'value')):
+                serializedCombination.append(' ')
+                continue
+
+            if(hasattr(key, 'value')):
                 serializedCombination.append(key.value.vk)
-            elif(hasattr(key, 'vk') and key.vk != None):
+                continue
+            
+            if(hasattr(key, 'vk') and key.vk != None):
                 if(isNumpad(key.vk)):
                     serializedCombination.append(key.vk)
-            elif(hasattr(key, 'char') and key.char != None):
+                    continue
+            
+            if(hasattr(key, 'char') and key.char != None and key.char != ''):
                 serializedCombination.append(str(key.char))
+                continue
         
         return serializedCombination
     
     def format(self):
         formattedHotkey = []
         for key in self.combination:
-            if(hasattr(key, "name") and key.name in allowed_keys):
+            if(hasattr(key, "name")):
                 if(key.name == "cmd" and platform == "win32"):
                     formattedHotkey.append("Win")
                 else:
@@ -45,8 +50,6 @@ class HotKey:
                     formattedHotkey.append(f'Num{key.vk-82}')
                 else:
                     formattedHotkey.append(f'Num{key.vk-83}')
-            elif(hasattr(key, 'vk') and isFunctionKey(key.vk)):
-                formattedHotkey.append(f'F{key.vk-111}')
             elif(hasattr(key, 'char')):
                 formattedHotkey.append(key.char)
         
@@ -70,27 +73,40 @@ class HotKey:
 def deserialize(hotkey):
     deserializedCombination = set()
     for key in hotkey:
-        if(isinstance(key, str)):
-            if(key == "space"):
-                deserializedCombination.add(pynput.keyboard.Key.space)
+        try:
+            key = pynput.keyboard.Key(pynput.keyboard.KeyCode(vk=key))
+            deserializedCombination.add(key)
+            continue
+        except ValueError:
+            pass
+        except TypeError:
+            pass
+        
+        try:
+            key = pynput.keyboard.Key(pynput.keyboard.KeyCode(char=key))
+            deserializedCombination.add(key)
+            continue
+        except ValueError:
+            pass
+
+        try:
+            if(isinstance(key, int)):
+                key = pynput.keyboard.KeyCode(vk=key)
+                deserializedCombination.add(key)
+                continue
             else:
-                deserializedCombination.add(pynput.keyboard.KeyCode(char=key))
-        elif(key in win32_numpad or key in darwin_numpad):
-            deserializedCombination.add(pynput.keyboard.KeyCode.from_vk(key))
-        elif(key in win32_function_keys):
-            deserializedCombination.add(pynput.keyboard.KeyCode.from_vk(key))
-        else:
-            deserializedCombination.add(pynput.keyboard.Key( pynput.keyboard.KeyCode.from_vk(key)) )
+                key = pynput.keyboard.KeyCode(char=key)
+                if(key.char != ''):
+                    deserializedCombination.add(key)
+                    continue
+        except ValueError:
+            pass
     
     return HotKey(combination=deserializedCombination)
 
 def isNumpad(vk):
         if(platform == "win32" and vk in win32_numpad):
             return True
-        elif(platform == "darwin" and vk in darwin_numpad):
+        elif(platform == "darwin" and vk in darwin_keypad):
             return True
         return False
-
-def isFunctionKey(vk):
-    if(platform == "win32" and vk in win32_function_keys):
-        return True
