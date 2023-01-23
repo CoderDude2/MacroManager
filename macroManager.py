@@ -10,7 +10,6 @@ from pynput.keyboard import _NORMAL_MODIFIERS
 
 import hotkey
 from tool import deserialize
-import notification
 
 class MacroManager:
     def __init__(self, escape_sequence_callback=None):
@@ -72,14 +71,8 @@ class MacroManager:
     def enable_listening(self, callback=None):
         self.isListening = True
 
-        if(self.is_listening_to_escape_sequence):
-            notification.notify(title="Macro Manager", subtitle="Listening Enabled")
-
     def disable_listening(self, callback=None):
         self.isListening = False
-
-        if(self.is_listening_to_escape_sequence):
-            notification.notify(title="Macro Manager", subtitle="Listening Disabled")
 
     def toggle_listening(self):
         if(self.isListening):

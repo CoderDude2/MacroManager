@@ -3,6 +3,7 @@ from sys import platform
 from tkinter import ttk
 
 import macroManager
+import notification
 from toolpopup import ToolPopup
 
 class ToolList(ttk.Treeview):
@@ -81,12 +82,15 @@ class App(tk.Tk):
 
 	def toggleListening(self):
 		# If MacroManager is enabled, disable it
+		print(self.focus_displayof())
 		if(self._macroManager.isListening):
 			self.menuBar.file_menu.entryconfigure(1, label="Enable Listening")
 			self._macroManager.isListening = False
 			self.title("Macro Manager (Listening Disabled)")
 
 			self._macroManager.disable_listening()
+			if(self.focus_displayof() == None):
+				notification.notify(title="Macro Manager", subtitle="Listening Disabled")
 
 		# If MacroManager is disabled, enable it
 		else:
@@ -95,6 +99,8 @@ class App(tk.Tk):
 			self.title("Macro Manager")
 
 			self._macroManager.enable_listening()
+			if(self.focus_displayof() == None):
+				notification.notify(title="Macro Manager", subtitle="Listening Enabled")
 
 	def submitButton(self):
 		self.popupWindow.destroy()
@@ -124,21 +130,21 @@ class App(tk.Tk):
 			if(selectedItem == ''):
 				self.toolList.deselectAll()
 
-	def addTool(self, tool):
+	def addTool(self, tool, previous_state=False):
 		self._macroManager.addTool(tool)
 		self.toolList.add_tool(tool)
 
-		self._macroManager.isListening = True
+		self._macroManager.isListening = previous_state
 		self._macroManager.is_listening_to_escape_sequence = True
 
-	def editTool(self, tool):
+	def editTool(self, tool, previous_state=False):
 		selectedItem = self.toolList.selection()[0]
 		selectedIndex = self.toolList.index(selectedItem)
 
 		self._macroManager.tools[selectedIndex] = tool
 		self.toolList.edit_tool(tool)
 		
-		self._macroManager.isListening = True
+		self._macroManager.isListening = previous_state
 		self._macroManager.is_listening_to_escape_sequence = True
 
 	def removeSelectedTools(self, event=None):
@@ -160,17 +166,19 @@ class App(tk.Tk):
 		self._macroManager.is_listening_to_escape_sequence = True
 
 	def editToolPopup(self):
+		previous_state = self._macroManager.isListening
 		self._macroManager.isListening = False
 		self._macroManager.is_listening_to_escape_sequence = False
 
-		tool = self.getSelectedTool()
-		ToolPopup(self, title="Edit Tool", submitButtonText="Save", on_submit=self.editTool, on_cancel=self.on_cancel, tool=tool)
+		selected_tool = self.getSelectedTool()
+		ToolPopup(self, title="Edit Tool", submitButtonText="Save", on_submit=lambda tool:(self.editTool(tool, previous_state)), on_cancel=self.on_cancel, tool=selected_tool)
 
 	def newToolPopup(self):
+		previous_state = self._macroManager.isListening
 		self._macroManager.isListening = False
 		self._macroManager.is_listening_to_escape_sequence = False
 
-		ToolPopup(self, title="New Tool", on_submit=self.addTool, on_cancel=self.on_cancel)
+		ToolPopup(self, title="New Tool", on_submit=lambda tool:(self.addTool(tool, previous_state)), on_cancel=self.on_cancel)
 
 	def getSelectedTool(self):
 		selectedItem = self.toolList.selection()[0]
